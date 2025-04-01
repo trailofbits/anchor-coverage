@@ -1,0 +1,20 @@
+[package]
+name = "anchor-coverage"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+addr2line = "0.24"
+anyhow = "1.0"
+assert_cmd = "2.0"
+byteorder = "1.5"
+cargo_metadata = "0.19"
+
+[features]
+# smoelius: Coverage for files in `CARGO_HOME` is generated only if the `include-cargo` feature is enabled.
+include-cargo = []
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+missing-errors-doc = "allow"
+missing-panics-doc = "allow"
