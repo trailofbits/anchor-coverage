@@ -7,7 +7,7 @@ A wrapper around [`anchor test`] for computing test coverage
 1. Install the Agave validator [from source] after adding the following to the `[patch.crate-io]` section near the end of its Cargo.toml:
 
    ```toml
-   sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }
+   solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }
    ```
 
 2. Ensure the root Cargo.toml of your Anchor project contains the following:
