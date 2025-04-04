@@ -58,7 +58,7 @@ struct Mismatch {
 
 type FileLineCountMap<'a> = BTreeMap<&'a str, BTreeMap<u32, usize>>;
 
-pub fn run(sbf_trace_dir: impl AsRef<Path>) -> Result<()> {
+pub fn run(sbf_trace_dir: impl AsRef<Path>, debug: bool) -> Result<()> {
     let mut pcs_paths_with_lcov = Vec::new();
     let mut pcs_paths_with_no_matching_dwarf = Vec::new();
 
@@ -74,15 +74,14 @@ pub fn run(sbf_trace_dir: impl AsRef<Path>) -> Result<()> {
         return Ok(());
     }
 
-    let pcs_paths = files_with_extension(&sbf_trace_dir, "pcs")?;
-
-    if pcs_paths.is_empty() {
-        eprintln!("Found no program counter files; dumping unpopulated vaddr entry maps...");
+    if debug {
         for dwarf in dwarfs {
             dump_vaddr_entry_map(dwarf.vaddr_entry_map);
         }
         return Ok(());
     }
+
+    let pcs_paths = files_with_extension(&sbf_trace_dir, "pcs")?;
 
     for pcs_path in &pcs_paths {
         if process_pcs_path(&dwarfs, pcs_path)? {

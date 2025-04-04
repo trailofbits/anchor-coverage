@@ -10,7 +10,7 @@ use std::{
 const SBF_TRACE_DIR: &str = "SBF_TRACE_DIR";
 
 fn main() -> Result<()> {
-    let args = args().collect::<Vec<_>>();
+    let (args, debug) = get_args();
 
     if args[1..]
         .iter()
@@ -48,9 +48,24 @@ A wrapper around `anchor test` for computing test coverage",
         );
     }
 
-    anchor_coverage::run(sbf_trace_dir)?;
+    anchor_coverage::run(sbf_trace_dir, debug)?;
 
     Ok(())
+}
+
+fn get_args() -> (Vec<String>, bool) {
+    let mut debug = false;
+    let args = args()
+        .filter_map(|arg| {
+            if arg == "--debug" {
+                debug = true;
+                None
+            } else {
+                Some(arg)
+            }
+        })
+        .collect::<Vec<_>>();
+    (args, debug)
 }
 
 fn anchor_test(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
