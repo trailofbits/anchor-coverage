@@ -16,6 +16,15 @@ fn clippy() {
 }
 
 #[test]
+fn dylint() {
+    Command::new("cargo")
+        .args(["dylint", "--all", "--", "--all-features", "--all-targets"])
+        .env("DYLINT_RUSTFLAGS", "--deny warnings")
+        .assert()
+        .success();
+}
+
+#[test]
 fn hack_feature_powerset_udeps() {
     Command::new("rustup")
         .env("RUSTFLAGS", "-D warnings")
