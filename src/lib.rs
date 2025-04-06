@@ -173,16 +173,16 @@ fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<bool> {
             .is_some_and(|&vaddr| vaddr == dwarf.start_address)
     );
 
+    // smoelius: If a sequence of program counters refer to the same file and line, treat them as
+    // one hit to that file and line.
+    vaddrs.dedup_by_key::<_, Option<&Entry>>(|vaddr| dwarf.vaddr_entry_map.get(vaddr));
+
     // smoelius: A `vaddr` could not have an entry because its file does not exist. Keep only those
     // `vaddr`s that have entries.
-    let mut vaddrs = vaddrs
+    let vaddrs = vaddrs
         .into_iter()
         .filter(|vaddr| dwarf.vaddr_entry_map.contains_key(vaddr))
         .collect::<Vec<_>>();
-
-    // smoelius: If a sequence of program counters refer to the same file and line, treat them as
-    // one hit to that file and line.
-    vaddrs.dedup_by_key::<_, &Entry>(|vaddr| dwarf.vaddr_entry_map.get(vaddr).unwrap());
 
     eprintln!("Line hits: {}", vaddrs.len());
 
