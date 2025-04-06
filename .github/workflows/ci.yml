@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  merge_group:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * tue"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  maybe-expedite:
+    outputs:
+      value: ${{ steps.expedite.outputs.value }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log github refs
+        run: |
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo 'github.ref: ${{ github.ref }}' >> "$GITHUB_STEP_SUMMARY"
+          echo 'github.sha: ${{ github.sha }}' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if merging an up-to-date branch
+        if: ${{ github.event_name == 'merge_group' }}
+        id: expedite
+        run: |
+          N="$(expr "${{ github.ref }}" : '.*-\([0-9]\+\)-[^-]*$')"
+          BASE_SHA="$(gh api /repos/${{ github.repository }}/pulls/"$N" | jq -r '.base.sha')"
+          if git diff --quiet ${{ github.event.merge_group.base_sha }} "$BASE_SHA"; then
+            echo "value=1" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  test:
+    needs: [maybe-expedite]
+
+    if: ${{ ! needs.maybe-expedite.outputs.value }}
+
+    strategy:
+      fail-fast: ${{ github.event_name == 'merge_group' }}
+      matrix:
+        # smoelius: Test with `macos-latest` once the repository is made public.
+        environment: [ubuntu-latest]
+        # smoelius: Test with Anchor 0.31.0 once the following issue is resolved:
+        # https://github.com/solana-foundation/anchor/issues/3643
+        anchor-version: [0.30.1]
+
+    runs-on: ${{ matrix.environment }}
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      GROUP_RUNNER: target.'cfg(all())'.runner = 'group-runner'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache/restore@v4
+        id: cache-restore
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+          path: |
+            ~/.avm
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ~/.dylint_drivers/
+            ~/.rustup/toolchains/
+            agave/
+            target/dylint/
+
+      - name: Rustup
+        run: rustup update
+
+      - name: Install Agave prerequisites
+        run: sudo apt install libclang-dev libudev-dev llvm protobuf-compiler
+
+      - name: Install Agave
+        run: |
+          if ! ./agave/bin/agave-validator --version; then
+            git clone https://github.com/anza-xyz/agave
+            cd agave
+            git checkout 86faa211d988143483adbe4c0cf16bb5e5798582
+            sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
+            ./scripts/cargo-install-all.sh .
+            cd ..
+          fi
+          echo "$PWD/agave/bin" >> "$GITHUB_PATH"
+
+      # smoelius: https://www.anchor-lang.com/docs/installation
+      - name: Install Anchor
+        run: |
+          mkdir ~/.config/solana
+          cp etc/rfc8032_test_vector.json ~/.config/solana/id.json
+          if [[ "$(anchor --version)" != 'anchor-cli ${{ matrix.anchor-version }}' ]]; then
+            cargo install --git https://github.com/coral-xyz/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
+          fi
+
+      - name: Install CI tools
+        run: |
+          rustup +nightly component add clippy rustfmt
+          cargo install cargo-dylint dylint-link || true
+          cargo install cargo-hack               || true
+          cargo install cargo-udeps --locked     || true
+          cargo install group-runner             || true
+
+      - name: Build
+        run: cargo build
+
+      - name: Test
+        run: |
+          cargo test --config "$GROUP_RUNNER"
+
+      # https://github.com/actions/cache/tree/main/save#always-save-cache
+      - uses: actions/cache/save@v4
+        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+          path: |
+            ~/.avm
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ~/.dylint_drivers/
+            ~/.rustup/toolchains/
+            agave/
+            target/dylint/
+
+  all-checks:
+    needs: [test]
+
+    # smoelius: From "Defining prerequisite jobs"
+    # (https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow#defining-prerequisite-jobs):
+    # > If you would like a job to run even if a job it is dependent on did not succeed, use the
+    # > `always()` conditional expression in `jobs.<job_id>.if`.
+    if: ${{ always() }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check results
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
