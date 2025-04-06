@@ -12,6 +12,8 @@ cargo_metadata = "0.19"
 
 [dev-dependencies]
 lcov = "0.8"
+regex = "1.11"
+tempfile = "3.19"
 
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
