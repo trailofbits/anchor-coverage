@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     let options = parse_args();
 
     if options.help {
-        eprintln!(
+        println!(
             "{} {}
 
 A wrapper around `anchor test` for computing test coverage",
