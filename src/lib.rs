@@ -22,6 +22,9 @@ use util::{StripCurrentDir, files_with_extension};
 mod vaddr;
 use vaddr::Vaddr;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 struct Entry<'a> {
     file: &'a str,
