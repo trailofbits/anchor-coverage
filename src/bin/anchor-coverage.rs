@@ -22,7 +22,10 @@ fn main() -> Result<()> {
         println!(
             "{} {}
 
-A wrapper around `anchor test` for computing test coverage",
+A wrapper around `anchor test` for computing test coverage
+
+Usage: {0} [ANCHOR_TEST_ARGS]...
+",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION")
         );
