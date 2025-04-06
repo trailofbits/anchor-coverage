@@ -198,6 +198,10 @@ static CARGO_HOME: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
         PathBuf::from(cargo_home)
     } else {
         #[allow(deprecated)]
+        #[cfg_attr(
+            dylint_lib = "inconsistent_qualification",
+            allow(inconsistent_qualification)
+        )]
         std::env::home_dir().unwrap().join(".cargo")
     }
 });
