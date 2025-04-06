@@ -9,13 +9,16 @@ use std::{
 
 const SBF_TRACE_DIR: &str = "SBF_TRACE_DIR";
 
-fn main() -> Result<()> {
-    let (args, debug) = get_args();
+struct Options {
+    args: Vec<String>,
+    debug: bool,
+    help: bool,
+}
 
-    if args[1..]
-        .iter()
-        .any(|arg| matches!(arg.as_str(), "-h" | "--help"))
-    {
+fn main() -> Result<()> {
+    let options = parse_args();
+
+    if options.help {
         eprintln!(
             "{} {}
 
@@ -37,7 +40,7 @@ A wrapper around `anchor test` for computing test coverage",
 
     create_dir_all(&sbf_trace_dir)?;
 
-    anchor_test(&args[1..], &sbf_trace_dir)?;
+    anchor_test(&options.args, &sbf_trace_dir)?;
 
     let pcs_paths = collect_pcs_paths(&sbf_trace_dir)?;
 
@@ -48,24 +51,29 @@ A wrapper around `anchor test` for computing test coverage",
         );
     }
 
-    anchor_coverage::run(sbf_trace_dir, debug)?;
+    anchor_coverage::run(sbf_trace_dir, options.debug)?;
 
     Ok(())
 }
 
-fn get_args() -> (Vec<String>, bool) {
+fn parse_args() -> Options {
     let mut debug = false;
+    let mut help = false;
     let args = args()
+        .skip(1)
         .filter_map(|arg| {
             if arg == "--debug" {
                 debug = true;
+                None
+            } else if arg == "--help" || arg == "-h" {
+                help = true;
                 None
             } else {
                 Some(arg)
             }
         })
         .collect::<Vec<_>>();
-    (args, debug)
+    Options { args, debug, help }
 }
 
 fn anchor_test(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
