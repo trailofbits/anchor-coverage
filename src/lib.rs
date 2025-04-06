@@ -189,7 +189,7 @@ fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<bool> {
     // one hit to that file and line.
     vaddrs.dedup_by_key::<_, &Entry>(|vaddr| dwarf.vaddr_entry_map.get(vaddr).unwrap());
 
-    eprintln!("File-line hits: {}", vaddrs.len());
+    eprintln!("Line hits: {}", vaddrs.len());
 
     let file_line_count_map = build_file_line_count_map(&dwarf.vaddr_entry_map, vaddrs);
 
