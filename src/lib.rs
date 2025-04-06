@@ -93,27 +93,18 @@ pub fn run(sbf_trace_dir: impl AsRef<Path>, debug: bool) -> Result<()> {
 
     assert!(pcs_paths_with_no_matching_dwarf.len() <= pcs_paths.len());
 
-    eprintln!();
-    eprintln!(
-        "Processed {} of {} program counter files",
-        pcs_paths.len() - pcs_paths_with_no_matching_dwarf.len(),
-        pcs_paths.len()
-    );
-
-    eprintln!(
-        "Lcov files were written for the following program counter files: {pcs_paths_with_lcov:#?}"
-    );
-
-    eprintln!(
-        "Closest match files were written for the following program counter files: {pcs_paths_with_no_matching_dwarf:#?}"
-    );
-
     eprintln!(
         "
+Processed {} of {} program counter files
+Lcov files written for the following program counter files: {pcs_paths_with_lcov:#?}
+Closest match files written for the following program counter files: {pcs_paths_with_no_matching_dwarf:#?}
+
 If you are done generating lcov files, try running:
 
-    genhtml --output-directory coverage {}/*.lcov
+    genhtml --output-directory coverage {}/*.lcov && open coverage/index.html
 ",
+        pcs_paths.len() - pcs_paths_with_no_matching_dwarf.len(),
+        pcs_paths.len(),
         sbf_trace_dir.as_ref().strip_current_dir().display()
     );
 
