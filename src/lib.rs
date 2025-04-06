@@ -4,6 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use cargo_metadata::MetadataCommand;
 use std::{
     collections::BTreeMap,
+    env::var_os,
     fs::{File, OpenOptions, metadata},
     io::Write,
     path::{Path, PathBuf},
@@ -189,9 +190,8 @@ fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<bool> {
     Ok(true)
 }
 
-#[cfg(not(feature = "include-cargo"))]
 static CARGO_HOME: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
-    if let Some(cargo_home) = std::env::var_os("CARGO_HOME") {
+    if let Some(cargo_home) = var_os("CARGO_HOME") {
         PathBuf::from(cargo_home)
     } else {
         #[allow(deprecated)]
@@ -219,8 +219,7 @@ fn build_vaddr_entry_map<'a>(loader: &'a Loader, debug_path: &Path) -> Result<Va
         if !Path::new(file).try_exists()? {
             continue;
         }
-        #[cfg(not(feature = "include-cargo"))]
-        if file.starts_with(CARGO_HOME.to_string_lossy().as_ref()) {
+        if !include_cargo() && file.starts_with(CARGO_HOME.to_string_lossy().as_ref()) {
             continue;
         }
         let Some(line) = location.line else {
@@ -408,4 +407,8 @@ fn write_lcov_file(pcs_path: &Path, file_line_count_map: FileLineCountMap<'_>) -
     }
 
     Ok(())
+}
+
+fn include_cargo() -> bool {
+    var_os("INCLUDE_CARGO").is_some()
 }
