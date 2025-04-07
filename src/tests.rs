@@ -16,6 +16,9 @@ static MUTEX: Mutex<()> = Mutex::new(());
 #[test]
 fn basic() {
     let _lock = MUTEX.lock().unwrap();
+
+    yarn(BASIC_DIR).unwrap();
+
     for test_config in ["full", "just_increment_x", "just_increment_y"] {
         let mut command = anchor_coverage_command(BASIC_DIR);
         command.args(["--run", &format!("test_configs/{test_config}")]);
@@ -56,6 +59,8 @@ fn basic() {
 fn include_cargo_does_not_change_line_hits() {
     let _lock = MUTEX.lock().unwrap();
 
+    yarn(CALL_EXTERNAL_DIR).unwrap();
+
     let report_without_cargo = run_anchor_coverage_and_read_lcov(CALL_EXTERNAL_DIR, false).unwrap();
 
     let report_with_cargo = run_anchor_coverage_and_read_lcov(CALL_EXTERNAL_DIR, true).unwrap();
@@ -74,6 +79,14 @@ fn include_cargo_does_not_change_line_hits() {
             );
         }
     }
+}
+
+fn yarn(dir: &str) -> Result<()> {
+    let mut command = Command::new("yarn");
+    command.current_dir(dir);
+    let status = command.status().unwrap();
+    ensure!(status.success(), "command failed: {command:?}");
+    Ok(())
 }
 
 fn run_anchor_coverage_and_read_lcov(dir: &str, include_cargo: bool) -> Result<lcov::Report> {
