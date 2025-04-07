@@ -39,6 +39,11 @@ struct Dwarf {
     vaddr_entry_map: BTreeMap<u64, Entry<'static>>,
 }
 
+enum Outcome {
+    Lcov(PathBuf),
+    ClosestMatch(PathBuf),
+}
+
 type Vaddrs = Vec<u64>;
 
 type VaddrEntryMap<'a> = BTreeMap<u64, Entry<'a>>;
@@ -63,8 +68,8 @@ struct Mismatch {
 type FileLineCountMap<'a> = BTreeMap<&'a str, BTreeMap<u32, usize>>;
 
 pub fn run(sbf_trace_dir: impl AsRef<Path>, debug: bool) -> Result<()> {
-    let mut pcs_paths_with_lcov = Vec::new();
-    let mut pcs_paths_with_no_matching_dwarf = Vec::new();
+    let mut lcov_paths = Vec::new();
+    let mut closest_match_paths = Vec::new();
 
     let debug_paths = debug_paths()?;
 
@@ -88,26 +93,29 @@ pub fn run(sbf_trace_dir: impl AsRef<Path>, debug: bool) -> Result<()> {
     let pcs_paths = files_with_extension(&sbf_trace_dir, "pcs")?;
 
     for pcs_path in &pcs_paths {
-        if process_pcs_path(&dwarfs, pcs_path)? {
-            pcs_paths_with_lcov.push(pcs_path.strip_current_dir());
-        } else {
-            pcs_paths_with_no_matching_dwarf.push(pcs_path.strip_current_dir());
+        match process_pcs_path(&dwarfs, pcs_path)? {
+            Outcome::Lcov(lcov_path) => {
+                lcov_paths.push(lcov_path.strip_current_dir().to_path_buf());
+            }
+            Outcome::ClosestMatch(closest_match_path) => {
+                closest_match_paths.push(closest_match_path.strip_current_dir().to_path_buf());
+            }
         }
     }
-
-    assert!(pcs_paths_with_no_matching_dwarf.len() <= pcs_paths.len());
 
     eprintln!(
         "
 Processed {} of {} program counter files
-Lcov files written for the following program counter files: {pcs_paths_with_lcov:#?}
-Closest match files written for the following program counter files: {pcs_paths_with_no_matching_dwarf:#?}
+
+Lcov files written: {lcov_paths:#?}
+
+Closest match files written: {closest_match_paths:#?}
 
 If you are done generating lcov files, try running:
 
     genhtml --output-directory coverage {}/*.lcov && open coverage/index.html
 ",
-        pcs_paths.len() - pcs_paths_with_no_matching_dwarf.len(),
+        lcov_paths.len(),
         pcs_paths.len(),
         sbf_trace_dir.as_ref().strip_current_dir().display()
     );
@@ -144,7 +152,7 @@ fn build_dwarf(debug_path: &Path) -> Result<Dwarf> {
     })
 }
 
-fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<bool> {
+fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<Outcome> {
     eprintln!();
     eprintln!(
         "Program counters file: {}",
@@ -158,8 +166,7 @@ fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<bool> {
     let (dwarf, mismatch) = find_applicable_dwarf(dwarfs, pcs_path, &mut vaddrs)?;
 
     if let Some(mismatch) = mismatch {
-        write_closest_match(pcs_path, dwarf, mismatch)?;
-        return Ok(false);
+        return write_closest_match(pcs_path, dwarf, mismatch).map(Outcome::ClosestMatch);
     }
 
     eprintln!(
@@ -188,9 +195,7 @@ fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<bool> {
 
     let file_line_count_map = build_file_line_count_map(&dwarf.vaddr_entry_map, vaddrs);
 
-    write_lcov_file(pcs_path, file_line_count_map)?;
-
-    Ok(true)
+    write_lcov_file(pcs_path, file_line_count_map).map(Outcome::Lcov)
 }
 
 static CARGO_HOME: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
@@ -353,7 +358,7 @@ fn dwarf_mismatch(vaddrs: &[u64], dwarf: &Dwarf, pcs_path: &Path) -> Result<Opti
     Ok(None)
 }
 
-fn write_closest_match(pcs_path: &Path, dwarf: &Dwarf, mismatch: Mismatch) -> Result<()> {
+fn write_closest_match(pcs_path: &Path, dwarf: &Dwarf, mismatch: Mismatch) -> Result<PathBuf> {
     let closest_match_path = pcs_path.with_extension("closest_match");
     let mut file = OpenOptions::new()
         .create(true)
@@ -369,7 +374,7 @@ fn write_closest_match(pcs_path: &Path, dwarf: &Dwarf, mismatch: Mismatch) -> Re
             mismatch
         }
     )?;
-    Ok(())
+    Ok(closest_match_path)
 }
 
 fn build_file_line_count_map<'a>(
@@ -395,7 +400,7 @@ fn build_file_line_count_map<'a>(
     file_line_count_map
 }
 
-fn write_lcov_file(pcs_path: &Path, file_line_count_map: FileLineCountMap<'_>) -> Result<()> {
+fn write_lcov_file(pcs_path: &Path, file_line_count_map: FileLineCountMap<'_>) -> Result<PathBuf> {
     let lcov_path = Path::new(pcs_path).with_extension("lcov");
 
     let mut file = OpenOptions::new()
@@ -413,7 +418,7 @@ fn write_lcov_file(pcs_path: &Path, file_line_count_map: FileLineCountMap<'_>) -
         writeln!(file, "end_of_record")?;
     }
 
-    Ok(())
+    Ok(lcov_path)
 }
 
 fn include_cargo() -> bool {
