@@ -83,6 +83,8 @@ fn anchor_test(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
     let mut command = Command::new("anchor");
     command.arg("test");
     command.args(args);
+    // smoelius: Options after `--` are passed to `cargo-build-sbpf`. For our case, passing
+    // `--debug` tells `cargo-build-sbpf` to enable debug symbols.
     if !args.iter().any(|arg| arg == "--") {
         command.arg("--");
     }
