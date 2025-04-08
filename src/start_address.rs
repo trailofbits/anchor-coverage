@@ -20,10 +20,16 @@ pub fn start_address(path: impl AsRef<Path>) -> Result<u64> {
     );
     let stdout = std::str::from_utf8(&output.stdout)?;
     for line in stdout.lines() {
-        if let Some(suffix) = line.strip_prefix("start address: 0x") {
-            if let Ok(address) = u64::from_str_radix(suffix, 16) {
-                return Ok(address);
-            }
+        // smoelius: "start address" may (LLVM `objdump`) or may not (GNU `objdump`) be followed by
+        // a colon (':'). Hence, we cannot simply use `strip_prefix`.
+        if !line.starts_with("start address") {
+            continue;
+        }
+        let Some(position) = line.rfind("0x") else {
+            continue;
+        };
+        if let Ok(address) = u64::from_str_radix(&line[position + 2..], 16) {
+            return Ok(address);
         }
     }
     bail!(
