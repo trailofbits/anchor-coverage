@@ -10,7 +10,7 @@ A wrapper around [`anchor test`] for computing test coverage
    solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }
    ```
 
-2. Add the following to `[profile.release]` section of you Anchor project's root Cargo.toml:
+2. Add the following to `[profile.release]` section of your Anchor project's root Cargo.toml:
 
    ```toml
    debug = true
