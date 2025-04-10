@@ -1,7 +1,11 @@
 [package]
 name = "anchor-coverage"
 version = "0.1.0"
+authors = ["Samuel Moelius <sam@moeli.us>"]
+description = "A wrapper around `anchor test` for computing test coverage"
 edition = "2024"
+license = "AGPL-3.0"
+repository = "https://github.com/trailofbits/anchor-coverage"
 
 [dependencies]
 addr2line = "0.24"
