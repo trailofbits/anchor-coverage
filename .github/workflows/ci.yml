@@ -36,8 +36,7 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        # smoelius: Test with `macos-latest` once the repository is made public.
-        environment: [ubuntu-latest]
+        environment: [ubuntu-latest, macos-latest]
         anchor-version: [0.32.1]
 
     runs-on: ${{ matrix.environment }}
@@ -77,10 +76,20 @@ jobs:
       - name: Rustup
         run: rustup update
 
-      - name: Install Anchor prerequisites
+      - name: Install Anchor prerequisites on Ubuntu
+        if: ${{ matrix.environment == 'ubuntu-latest' }}
         run: |
           sudo apt update
           sudo apt install libudev-dev
+
+      - name: Install Anchor prerequisites on macOS
+        if: ${{ matrix.environment == 'macos-latest' }}
+        run: |
+          brew install coreutils llvm protobuf
+          # smoelius: ~/lib is one of the directories `librocksdb-sys`'s build script checks
+          # for libclang.dylib.
+          mkdir ~/lib
+          ln -s /opt/homebrew/opt/llvm/lib/libclang.dylib ~/lib/libclang.dylib
 
       # smoelius: https://www.anchor-lang.com/docs/installation
       - name: Install Anchor
@@ -107,12 +116,21 @@ jobs:
       - name: Sanity test fixtures
         run: |
           AGAVE_TAG="$(cat agave_tag.txt)"
+          case "$(uname -s)" in
+              Darwin)
+                  EXT=macOS
+                  ;;
+              Linux)
+                  EXT=Linux
+                  ;;
+              *)
+          esac
           for X in fixtures/*; do
             pushd "$X"
             yarn
-            wget --quiet https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
-            tar xzf patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
-            PATH="$PWD/patched-agave-tools-$AGAVE_TAG-Linux/bin:$PATH"
+            wget --quiet https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
+            tar xzf patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
+            PATH="$PWD/patched-agave-tools-$AGAVE_TAG-$EXT/bin:$PATH"
             anchor test
             popd
           done
