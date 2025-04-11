@@ -53,8 +53,7 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        # smoelius: Test with `macos-latest` once the repository is made public.
-        environment: [ubuntu-latest]
+        environment: [ubuntu-latest, macos-15]
         # smoelius: Test with Anchor 0.31.0 once the following issue is resolved:
         # https://github.com/solana-foundation/anchor/issues/3643
         anchor-version: [0.30.1]
@@ -89,8 +88,19 @@ jobs:
       - name: Rustup
         run: rustup update
 
-      - name: Install Agave prerequisites
+      - name: Install Agave prerequisites on Ubuntu
+        if: ${{ matrix.environment == 'ubuntu-latest' }}
         run: sudo apt install libclang-dev libudev-dev llvm protobuf-compiler
+
+      - name: Install Agave prerequisites on macOS
+        if: ${{ matrix.environment == 'macos-15' }}
+        run: |
+          brew install coreutils gnu-sed llvm protobuf
+          echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin" >> "$GITHUB_PATH"
+          # smoelius: ~/lib is one of the directories `librocksdb-sys`'s build script checks
+          # for libclang.dylib.
+          mkdir ~/lib
+          ln -s /opt/homebrew/opt/llvm/lib/libclang.dylib ~/lib/libclang.dylib
 
       - name: Install Agave
         run: |
@@ -130,7 +140,9 @@ jobs:
 
       # https://github.com/actions/cache/tree/main/save#always-save-cache
       - uses: actions/cache/save@v4
-        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        # smoelius: The cache should be updated regardless of whether it was restored in case
+        # further progress is made.
+        if: always() # && steps.cache-restore.outputs.cache-hit != 'true'
         with:
           key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
           path: |
