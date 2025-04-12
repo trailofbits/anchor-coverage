@@ -1,39 +1,35 @@
-//! A hack to get an ELF's start address by calling `objdump` on the command line.
-//!
-//! A proper solution would use [`gimli`] or something similar.
-//!
-//! [`gimli`]: https://crates.io/crates/gimli
+//! Gets an ELF's start address by reading its `Elf64Hdr`.
 
-use anyhow::{Result, bail, ensure};
-use assert_cmd::output::OutputError;
-use std::{path::Path, process::Command};
+use anyhow::Result;
+use std::{fs::File, io::Read, path::Path, slice::from_raw_parts_mut};
+
+const EI_NIDENT: usize = 16;
+
+#[allow(clippy::struct_field_names)]
+#[derive(Default)]
+#[repr(C)]
+pub struct Elf64Hdr {
+    pub e_ident: [u8; EI_NIDENT],
+    pub e_type: u16,
+    pub e_machine: u16,
+    pub e_version: u32,
+    pub e_entry: u64,
+    pub e_phoff: u64,
+    pub e_shoff: u64,
+    pub e_flags: u32,
+    pub e_ehsize: u16,
+    pub e_phentsize: u16,
+    pub e_phnum: u16,
+    pub e_shentsize: u16,
+    pub e_shnum: u16,
+    pub e_shstrndx: u16,
+}
 
 pub fn start_address(path: impl AsRef<Path>) -> Result<u64> {
-    let mut command = Command::new("objdump");
-    command.arg("-f");
-    command.arg(path.as_ref());
-    let output = command.output()?;
-    ensure!(
-        output.status.success(),
-        "command failed `{command:?}`: {}",
-        OutputError::new(output)
-    );
-    let stdout = std::str::from_utf8(&output.stdout)?;
-    for line in stdout.lines() {
-        // smoelius: "start address" may (LLVM `objdump`) or may not (GNU `objdump`) be followed by
-        // a colon (':'). Hence, we cannot simply use `strip_prefix`.
-        if !line.starts_with("start address") {
-            continue;
-        }
-        let Some(position) = line.rfind("0x") else {
-            continue;
-        };
-        if let Ok(address) = u64::from_str_radix(&line[position + 2..], 16) {
-            return Ok(address);
-        }
-    }
-    bail!(
-        "failed to determine start address for `{}`",
-        path.as_ref().display()
-    );
+    let mut file = File::open(path)?;
+    let mut elf64_hdr = Elf64Hdr::default();
+    let buf: &mut [u8] =
+        unsafe { from_raw_parts_mut((&raw mut elf64_hdr).cast::<u8>(), size_of::<Elf64Hdr>()) };
+    file.read_exact(buf)?;
+    Ok(elf64_hdr.e_entry)
 }
