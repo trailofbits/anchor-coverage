@@ -15,6 +15,7 @@ byteorder = "1.5"
 cargo_metadata = "0.19"
 
 [dev-dependencies]
+ctor = "0.4"
 lcov = "0.8"
 regex = "1.11"
 tempfile = "3.19"
