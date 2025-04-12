@@ -10,6 +10,14 @@ A wrapper around [`anchor test`] for computing test coverage
    solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }
    ```
 
+   For many situations, the following commands should suffice:
+
+   ```sh
+   sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
+   ./scripts/cargo-install-all.sh .
+   export PATH=$PWD/bin:$PATH
+   ```
+
 2. Add the following to `[profile.release]` section of your Anchor project's root Cargo.toml:
 
    ```toml
