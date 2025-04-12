@@ -124,6 +124,12 @@ jobs:
       - name: Build
         run: cargo build
 
+      - name: Sanity test fixtures
+        run: |
+          for X in fixtures/*; do
+            pushd "$X" && yarn && anchor test && popd
+          done
+
       - name: Test
         run: |
           cargo test --config "$GROUP_RUNNER"
