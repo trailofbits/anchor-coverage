@@ -1,6 +1,13 @@
 use assert_cmd::Command;
 use regex::Regex;
-use std::{fs::read_to_string, path::Path};
+use std::{env::remove_var, fs::read_to_string, path::Path};
+
+#[ctor::ctor]
+fn initialize() {
+    unsafe {
+        remove_var("CARGO_TERM_COLOR");
+    }
+}
 
 #[test]
 fn clippy() {
