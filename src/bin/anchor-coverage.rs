@@ -1,9 +1,8 @@
 use anyhow::{Result, bail, ensure};
 use std::{
     env::{args, current_dir},
-    ffi::OsStr,
-    fs::{create_dir_all, read_dir, remove_dir_all},
-    path::{Path, PathBuf},
+    fs::{create_dir_all, remove_dir_all},
+    path::Path,
     process::Command,
 };
 
@@ -45,7 +44,7 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
 
     anchor_test(&options.args, &sbf_trace_dir)?;
 
-    let pcs_paths = collect_pcs_paths(&sbf_trace_dir)?;
+    let pcs_paths = anchor_coverage::util::files_with_extension(&sbf_trace_dir, "pcs")?;
 
     if pcs_paths.is_empty() {
         bail!(
@@ -93,16 +92,4 @@ fn anchor_test(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
     let status = command.status()?;
     ensure!(status.success(), "command failed: {:?}", command);
     Ok(())
-}
-
-fn collect_pcs_paths(path: &Path) -> Result<Vec<PathBuf>> {
-    let mut pcs_paths = Vec::new();
-    for result in read_dir(path)? {
-        let entry = result?;
-        let path = entry.path();
-        if entry.path().extension() == Some(OsStr::new("pcs")) {
-            pcs_paths.push(path);
-        }
-    }
-    Ok(pcs_paths)
 }

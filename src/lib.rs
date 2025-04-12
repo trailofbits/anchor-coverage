@@ -16,7 +16,7 @@ use insn::Insn;
 mod start_address;
 use start_address::start_address;
 
-mod util;
+pub mod util;
 use util::{StripCurrentDir, files_with_extension};
 
 mod vaddr;
