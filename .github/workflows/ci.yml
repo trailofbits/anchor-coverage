@@ -113,12 +113,14 @@ jobs:
             cargo install --git https://github.com/coral-xyz/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
           fi
 
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-hack, cargo-udeps
+
       - name: Install CI tools
         run: |
           rustup +nightly component add clippy rustfmt
           cargo install cargo-dylint dylint-link || true
-          cargo install cargo-hack               || true
-          cargo install cargo-udeps --locked     || true
           cargo install group-runner             || true
 
       - name: Build
