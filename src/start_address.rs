@@ -28,8 +28,9 @@ pub struct Elf64Hdr {
 pub fn start_address(path: impl AsRef<Path>) -> Result<u64> {
     let mut file = File::open(path)?;
     let mut elf64_hdr = Elf64Hdr::default();
-    let buf: &mut [u8] =
-        unsafe { from_raw_parts_mut((&raw mut elf64_hdr).cast::<u8>(), size_of::<Elf64Hdr>()) };
+    let data = (&raw mut elf64_hdr).cast::<u8>();
+    let len = size_of::<Elf64Hdr>();
+    let buf: &mut [u8] = unsafe { from_raw_parts_mut(data, len) };
     file.read_exact(buf)?;
     Ok(elf64_hdr.e_entry)
 }
