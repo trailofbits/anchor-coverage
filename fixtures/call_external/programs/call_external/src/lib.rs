@@ -9,7 +9,7 @@ pub mod call_external {
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         let signer = &ctx.accounts.signer;
         let pubkey = signer.signer_key().unwrap();
-        msg!("Signer's pubkey is: {}", pubkey);
+        msg!("Signer's pubkey: {}", pubkey);
         Ok(())
     }
 }
