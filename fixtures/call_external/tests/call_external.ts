@@ -12,11 +12,20 @@ describe("call_external", () => {
     // Add your test here.
     const tx = await program.methods.initialize().rpc();
     console.log("Your transaction signature", tx);
-    const txDetails = await program.provider.connection.getTransaction(tx, {
-      maxSupportedTransactionVersion: 0,
-      commitment: "confirmed",
-    });
+    let txDetails = null;
+    let nAttempts = 0;
+    while (true) {
+      txDetails = await program.provider.connection.getTransaction(tx, {
+        maxSupportedTransactionVersion: 0,
+        commitment: "confirmed",
+      });
+      if (txDetails == null && ++nAttempts < 2) {
+        console.log("Retrying transaction fetch...")
+      } else {
+        break;
+      }
+    }
     const logMessages = txDetails.meta.logMessages;
-    console.log(`${JSON.stringify(logMessages, null, 2)}`);
+    console.log(`Log messages: ${JSON.stringify(logMessages, null, 2)}`);
   });
 });
