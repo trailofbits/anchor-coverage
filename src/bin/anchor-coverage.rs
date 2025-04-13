@@ -1,3 +1,4 @@
+use anchor_coverage::util::StripCurrentDir;
 use anyhow::{Result, bail, ensure};
 use std::{
     env::{args, current_dir},
@@ -48,8 +49,10 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
 
     if pcs_paths.is_empty() {
         bail!(
-            "`SBF_TRACE_DIR` contains no program counter files; are you sure `solana-validator` \
-             is patched?"
+            "Found no program counter files in: {}
+
+Are you sure your `solana-test-validator` is patched?",
+            sbf_trace_dir.strip_current_dir().display()
         );
     }
 
