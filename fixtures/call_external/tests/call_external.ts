@@ -19,7 +19,7 @@ describe("call_external", () => {
         maxSupportedTransactionVersion: 0,
         commitment: "confirmed",
       });
-      if (txDetails == null && ++nAttempts < 2) {
+      if (txDetails == null && ++nAttempts < 3) {
         console.log("Retrying transaction fetch...")
       } else {
         break;
