@@ -18,6 +18,3 @@ idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = "0.31.0"
-
-[lints.rust.unexpected_cfgs]
-level = "allow"
