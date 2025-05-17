@@ -55,9 +55,7 @@ jobs:
       matrix:
         # smoelius: Test with `macos-latest` once the repository is made public.
         environment: [ubuntu-latest]
-        # smoelius: Test with Anchor 0.31.0 once the following issue is resolved:
-        # https://github.com/solana-foundation/anchor/issues/3643
-        anchor-version: [0.30.1]
+        anchor-version: [0.31.1]
 
     runs-on: ${{ matrix.environment }}
 
