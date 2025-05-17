@@ -1,11 +1,11 @@
 use addr2line::Loader;
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
 use cargo_metadata::MetadataCommand;
 use std::{
     collections::BTreeMap,
     env::var_os,
-    fs::{File, OpenOptions, metadata},
+    fs::{metadata, File, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
 };
@@ -17,7 +17,7 @@ mod start_address;
 use start_address::start_address;
 
 pub mod util;
-use util::{StripCurrentDir, files_with_extension};
+use util::{files_with_extension, StripCurrentDir};
 
 mod vaddr;
 use vaddr::Vaddr;
@@ -174,11 +174,9 @@ fn process_pcs_path(dwarfs: &[Dwarf], pcs_path: &Path) -> Result<Outcome> {
         dwarf.path.strip_current_dir().display()
     );
 
-    assert!(
-        vaddrs
-            .first()
-            .is_some_and(|&vaddr| vaddr == dwarf.start_address)
-    );
+    assert!(vaddrs
+        .first()
+        .is_some_and(|&vaddr| vaddr == dwarf.start_address));
 
     // smoelius: If a sequence of program counters refer to the same file and line, treat them as
     // one hit to that file and line.
