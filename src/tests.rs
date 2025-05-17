@@ -1,5 +1,5 @@
 use crate::util::files_with_extension;
-use anyhow::{Result, ensure};
+use anyhow::{ensure, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use std::{
     collections::HashSet, env::current_dir, fs::read_to_string, path::Path, process::Command,

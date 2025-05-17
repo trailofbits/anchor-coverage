@@ -1,5 +1,7 @@
 comment_width = 100
 format_code_in_doc_comments = true
 format_strings = true
-style_edition = "2024"
 wrap_comments = true
+
+# smoelius: Formatting with style edition 2021 makes incorporating Anchor source easier.
+style_edition = "2021"
