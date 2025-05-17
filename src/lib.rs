@@ -10,6 +10,24 @@ use std::{
     path::{Path, PathBuf},
 };
 
+pub const DOCKER_BUILDER_VERSION: &str = "0.0.0";
+
+#[cfg(feature = "__idl_build")]
+mod anchor_cli_lib;
+#[cfg(feature = "__idl_build")]
+pub use anchor_cli_lib::__build;
+#[cfg(feature = "__idl_build")]
+pub use anchor_cli_lib::{
+    __get_keypair as get_keypair, __is_hidden as is_hidden, __keys_sync as keys_sync,
+};
+
+#[cfg(feature = "__idl_build")]
+mod anchor_cli_config;
+#[cfg(feature = "__idl_build")]
+use anchor_cli_config as config;
+#[cfg(feature = "__idl_build")]
+pub use anchor_cli_config::{BootstrapMode, ConfigOverride, ProgramArch};
+
 mod insn;
 use insn::Insn;
 

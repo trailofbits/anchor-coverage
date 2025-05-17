@@ -2,8 +2,8 @@ use anchor_coverage::util::StripCurrentDir;
 use anyhow::{bail, ensure, Result};
 use std::{
     env::{args, current_dir},
-    fs::{create_dir_all, remove_dir_all},
-    path::Path,
+    fs::{canonicalize, create_dir_all, remove_dir_all},
+    path::{Path, PathBuf},
     process::Command,
 };
 
@@ -43,16 +43,27 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
 
     create_dir_all(&sbf_trace_dir)?;
 
-    anchor_test(&options.args, &sbf_trace_dir)?;
+    anchor_test_with_debug(&options.args, &sbf_trace_dir)?;
 
     let pcs_paths = anchor_coverage::util::files_with_extension(&sbf_trace_dir, "pcs")?;
 
     if pcs_paths.is_empty() {
+        let grep_message = grep_command()
+            .map(|command| {
+                format!(
+                    " Try running the following command:
+
+    {command}"
+                )
+            })
+            .unwrap_or_default();
+
         bail!(
             "Found no program counter files in: {}
 
-Are you sure your `solana-test-validator` is patched?",
-            sbf_trace_dir.strip_current_dir().display()
+Are you sure your `solana-test-validator` is patched?{}",
+            sbf_trace_dir.strip_current_dir().display(),
+            grep_message
         );
     }
 
@@ -81,18 +92,67 @@ fn parse_args() -> Options {
     Options { args, debug, help }
 }
 
-fn anchor_test(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
+fn anchor_test_with_debug(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
+    anchor_build_no_idl_debug()?;
+
+    #[cfg(feature = "__idl_build")]
+    anchor_coverage::__build(
+        &anchor_coverage::ConfigOverride::default(),
+        false, // no_idl
+        None,
+        None,
+        false,
+        true, // skip_lint
+        None,
+        None,
+        None,
+        anchor_coverage::BootstrapMode::None,
+        None,
+        None,
+        Vec::new(),
+        Vec::new(),
+        true, // no_docs
+        anchor_coverage::ProgramArch::Sbf,
+    )?;
+
+    anchor_test_skip_build(args, sbf_trace_dir)?;
+
+    Ok(())
+}
+
+fn anchor_build_no_idl_debug() -> Result<()> {
     let mut command = Command::new("anchor");
-    command.arg("test");
-    command.args(args);
     // smoelius: Options after `--` are passed to `cargo-build-sbpf`. For our case, passing
     // `--debug` tells `cargo-build-sbpf` to enable debug symbols.
-    if !args.iter().any(|arg| arg == "--") {
-        command.arg("--");
-    }
-    command.arg("--debug");
+    command.args(["build", "--no-idl", "--", "--debug"]);
+    let status = command.status()?;
+    ensure!(status.success(), "command failed: {:?}", command);
+    Ok(())
+}
+
+fn anchor_test_skip_build(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
+    let mut command = Command::new("anchor");
+    command.args(["test", "--skip-build"]);
+    command.args(args);
     command.env(SBF_TRACE_DIR, sbf_trace_dir);
     let status = command.status()?;
     ensure!(status.success(), "command failed: {:?}", command);
     Ok(())
+}
+
+fn grep_command() -> Result<String> {
+    let path = which("solana-test-validator")?;
+    Ok(format!(
+        "grep SBF_TRACE_DIR {} || echo 'solana-test-validator is not patched'",
+        path.display()
+    ))
+}
+
+fn which(filename: &str) -> Result<PathBuf> {
+    let mut command = Command::new("which");
+    let output = command.arg(filename).output()?;
+    ensure!(output.status.success(), "command failed: {command:?}");
+    let stdout = std::str::from_utf8(&output.stdout)?;
+    let path = canonicalize(stdout.trim_end())?;
+    Ok(path)
 }
