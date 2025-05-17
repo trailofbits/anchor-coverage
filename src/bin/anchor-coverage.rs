@@ -1,5 +1,5 @@
 use anchor_coverage::util::StripCurrentDir;
-use anyhow::{Result, bail, ensure};
+use anyhow::{bail, ensure, Result};
 use std::{
     env::{args, current_dir},
     fs::{create_dir_all, remove_dir_all},
