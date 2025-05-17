@@ -5,3 +5,7 @@ wrap_comments = true
 
 # smoelius: Formatting with style edition 2021 makes incorporating Anchor source easier.
 style_edition = "2021"
+
+# smoelius: Even with style edition 2021, `format_strings = true` causes `cargo +nightly fmt` to
+# modify src/anchor_cli_config.rs.
+ignore = ["src/anchor_cli_*"]

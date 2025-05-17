@@ -43,7 +43,7 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
 
     create_dir_all(&sbf_trace_dir)?;
 
-    anchor_test(&options.args, &sbf_trace_dir)?;
+    anchor_test_with_debug(&options.args, &sbf_trace_dir)?;
 
     let pcs_paths = anchor_coverage::util::files_with_extension(&sbf_trace_dir, "pcs")?;
 
@@ -81,16 +81,36 @@ fn parse_args() -> Options {
     Options { args, debug, help }
 }
 
-fn anchor_test(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
+fn anchor_test_with_debug(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
+    #[cfg(feature = "__anchor_cli")]
+    anchor_coverage::__build_with_debug(
+        &anchor_coverage::ConfigOverride::default(),
+        false, // no_idl
+        None,
+        None,
+        false,
+        true, // skip_lint
+        None,
+        None,
+        None,
+        anchor_coverage::BootstrapMode::None,
+        None,
+        None,
+        Vec::new(),
+        Vec::new(),
+        true, // no_docs
+        anchor_coverage::ProgramArch::Sbf,
+    )?;
+
+    anchor_test_skip_build(args, sbf_trace_dir)?;
+
+    Ok(())
+}
+
+fn anchor_test_skip_build(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
     let mut command = Command::new("anchor");
-    command.arg("test");
+    command.args(["test", "--skip-build"]);
     command.args(args);
-    // smoelius: Options after `--` are passed to `cargo-build-sbpf`. For our case, passing
-    // `--debug` tells `cargo-build-sbpf` to enable debug symbols.
-    if !args.iter().any(|arg| arg == "--") {
-        command.arg("--");
-    }
-    command.arg("--debug");
     command.env(SBF_TRACE_DIR, sbf_trace_dir);
     let status = command.status()?;
     ensure!(status.success(), "command failed: {:?}", command);
