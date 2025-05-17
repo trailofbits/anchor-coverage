@@ -6,7 +6,7 @@ describe("call_external", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.CallExternal as Program<CallExternal>;
+  const program = anchor.workspace.callExternal as Program<CallExternal>;
 
   it("Is initialized!", async () => {
     // Add your test here.
