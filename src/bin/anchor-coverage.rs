@@ -2,8 +2,8 @@ use anchor_coverage::util::StripCurrentDir;
 use anyhow::{bail, ensure, Result};
 use std::{
     env::{args, current_dir},
-    fs::{create_dir_all, remove_dir_all},
-    path::Path,
+    fs::{canonicalize, create_dir_all, remove_dir_all},
+    path::{Path, PathBuf},
     process::Command,
 };
 
@@ -48,11 +48,20 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
     let pcs_paths = anchor_coverage::util::files_with_extension(&sbf_trace_dir, "pcs")?;
 
     if pcs_paths.is_empty() {
+        let try_running_message = grep_command()
+            .map(|command| {
+                format!(
+                    " Try running the following command:
+    {command}"
+                )
+            })
+            .unwrap_or_default();
+
         bail!(
             "Found no program counter files in: {}
-
-Are you sure your `solana-test-validator` is patched?",
-            sbf_trace_dir.strip_current_dir().display()
+Are you sure your `solana-test-validator` is patched?{}",
+            sbf_trace_dir.strip_current_dir().display(),
+            try_running_message
         );
     }
 
@@ -115,4 +124,21 @@ fn anchor_test_skip_build(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
     let status = command.status()?;
     ensure!(status.success(), "command failed: {:?}", command);
     Ok(())
+}
+
+fn grep_command() -> Result<String> {
+    let path = which("solana-test-validator")?;
+    Ok(format!(
+        "grep SBF_TRACE_DIR {} || echo 'solana-test-validator is not patched'",
+        path.display()
+    ))
+}
+
+fn which(filename: &str) -> Result<PathBuf> {
+    let mut command = Command::new("which");
+    let output = command.arg(filename).output()?;
+    ensure!(output.status.success(), "command failed: {command:?}");
+    let stdout = std::str::from_utf8(&output.stdout)?;
+    let path = canonicalize(stdout.trim_end())?;
+    Ok(path)
 }
