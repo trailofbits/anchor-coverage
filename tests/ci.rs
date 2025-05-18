@@ -34,6 +34,14 @@ fn dylint() {
 }
 
 #[test]
+fn fmt() {
+    Command::new("cargo")
+        .args(["+nightly", "fmt", "--check"])
+        .assert()
+        .success();
+}
+
+#[test]
 fn hack_feature_powerset_udeps() {
     Command::new("rustup")
         .env("RUSTFLAGS", "-D warnings")
