@@ -4,7 +4,7 @@ A wrapper around [`anchor test`] for computing test coverage
 
 ## Steps to use
 
-1. Install the Agave validator [from source] after adding the following to the `[patch.crate-io]` section near the end of its Cargo.toml:
+1. Install the Agave validator at commit [`86faa21`] [from source] after adding the following to the `[patch.crate-io]` section near the end of its Cargo.toml: [^1]
 
    ```toml
    solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }
@@ -13,6 +13,7 @@ A wrapper around [`anchor test`] for computing test coverage
    For many situations, the following commands should suffice:
 
    ```sh
+   git checkout 86faa211d988143483adbe4c0cf16bb5e5798582
    sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
    ./scripts/cargo-install-all.sh .
    export PATH=$PWD/bin:$PATH
@@ -39,6 +40,8 @@ A wrapper around [`anchor test`] for computing test coverage
    ```sh
    genhtml --output-directory coverage sbf_trace_dir/*.lcov && open coverage/index.html
    ```
+
+[^1]: [`86faa21`] is the latest commit with which the [`sbpf-coverage` patch] is known to work.
 
 ## Known problems
 
@@ -73,5 +76,7 @@ The following is an example. The line with the assignment to `signer` is hit onl
 - Useful reference re LCOV: https://github.com/linux-test-project/lcov/issues/113#issuecomment-762335134
 
 [LLVM instrumentation-based coverage]: https://llvm.org/docs/CoverageMappingFormat.html
+[`86faa21`]: https://github.com/anza-xyz/agave/commit/86faa211d988143483adbe4c0cf16bb5e5798582
 [`anchor test`]: https://www.anchor-lang.com/docs/references/cli#test
+[`sbpf-coverage` patch]: https://github.com/trail-of-forks/sbpf-coverage
 [from source]: https://docs.anza.xyz/cli/install#building-from-source
