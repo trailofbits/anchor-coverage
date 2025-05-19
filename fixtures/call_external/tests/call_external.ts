@@ -20,7 +20,8 @@ describe("call_external", () => {
         commitment: "confirmed",
       });
       if (txDetails == null && ++nAttempts < 3) {
-        console.log("Retrying transaction fetch...")
+        console.log("Retrying transaction fetch in one second...")
+        await new Promise(resolve => setTimeout(resolve, 1000));
       } else {
         break;
       }
