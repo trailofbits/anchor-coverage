@@ -2,13 +2,18 @@ use crate::util::files_with_extension;
 use anyhow::{ensure, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use std::{
-    collections::HashSet, env::current_dir, fs::read_to_string, path::Path, process::Command,
+    collections::HashSet,
+    env::current_dir,
+    fs::read_to_string,
+    path::{Path, PathBuf},
+    process::Command,
     sync::Mutex,
 };
 
 const BASIC_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/basic");
-
 const CALL_EXTERNAL_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/call_external");
+const MULTIPLE_PROGRAMS_DIR: &str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/multiple_programs");
 
 // smoelius: Only one Anchor test can be run at a time.
 static MUTEX: Mutex<()> = Mutex::new(());
@@ -78,6 +83,50 @@ fn include_cargo_does_not_change_line_hits() {
                 lines_with_cargo.count
             );
         }
+    }
+}
+
+#[test]
+fn multiple_programs() {
+    let _lock = MUTEX.lock().unwrap();
+
+    yarn(MULTIPLE_PROGRAMS_DIR).unwrap();
+
+    let mut command = anchor_coverage_command(MULTIPLE_PROGRAMS_DIR);
+    let status = command.status().unwrap();
+    assert!(status.success(), "command failed: {command:?}");
+
+    let lcovs = files_with_extension(
+        Path::new(MULTIPLE_PROGRAMS_DIR).join("sbf_trace_dir"),
+        "lcov",
+    )
+    .unwrap();
+    let source_files = lcovs
+        .iter()
+        .map(|lcov| {
+            let contents = read_to_string(lcov).unwrap();
+            let source_file = contents
+                .lines()
+                .next()
+                .and_then(|line| line.strip_prefix("SF:"))
+                .unwrap();
+            PathBuf::from(source_file)
+        })
+        .collect::<HashSet<_>>();
+
+    for program in ["foo", "bar"] {
+        // smoelius: Verify IDL was generated.
+        let idl_json_path = Path::new(MULTIPLE_PROGRAMS_DIR)
+            .join("target/idl")
+            .join(program)
+            .with_extension("json");
+        assert!(idl_json_path.try_exists().unwrap());
+        // smoelius: Verify lcov was generated.
+        let lib_rs_path = Path::new(MULTIPLE_PROGRAMS_DIR)
+            .join("programs")
+            .join(program)
+            .join("src/lib.rs");
+        assert!(source_files.contains(&lib_rs_path));
     }
 }
 
