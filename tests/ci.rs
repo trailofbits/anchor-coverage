@@ -1,6 +1,7 @@
 use assert_cmd::Command;
 use regex::Regex;
-use std::{env::remove_var, fs::read_to_string, path::Path};
+use std::{env::remove_var, ffi::OsStr, fs::read_to_string, path::Path};
+use walkdir::WalkDir;
 
 #[ctor::ctor]
 fn initialize() {
@@ -74,6 +75,14 @@ fn markdown_link_check() {
         .current_dir(&tempdir)
         .assert()
         .success();
+}
+
+#[test]
+fn no_package_lock_json() {
+    for result in WalkDir::new("fixtures") {
+        let entry = result.unwrap();
+        assert_ne!(entry.file_name(), OsStr::new("package-lock.json"));
+    }
 }
 
 #[test]
