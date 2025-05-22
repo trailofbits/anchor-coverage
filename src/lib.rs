@@ -5,7 +5,7 @@ use cargo_metadata::MetadataCommand;
 use std::{
     collections::BTreeMap,
     env::var_os,
-    fs::{metadata, File, OpenOptions},
+    fs::{File, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
 };
@@ -160,7 +160,7 @@ fn build_dwarf(debug_path: &Path) -> Result<Dwarf> {
 
     let loader = Box::leak(Box::new(loader));
 
-    let vaddr_entry_map = build_vaddr_entry_map(loader, debug_path)?;
+    let vaddr_entry_map = build_vaddr_entry_map(loader)?;
 
     Ok(Dwarf {
         path: debug_path.to_path_buf(),
@@ -227,19 +227,18 @@ static CARGO_HOME: std::sync::LazyLock<PathBuf> = std::sync::LazyLock::new(|| {
     }
 });
 
-fn build_vaddr_entry_map<'a>(loader: &'a Loader, debug_path: &Path) -> Result<VaddrEntryMap<'a>> {
+fn build_vaddr_entry_map<'a>(loader: &'a Loader) -> Result<VaddrEntryMap<'a>> {
     let mut vaddr_entry_map = VaddrEntryMap::new();
-    let metadata = metadata(debug_path)?;
-    for vaddr in (0..metadata.len()).step_by(size_of::<u64>()) {
-        let location = loader.find_location(vaddr).map_err(|error| {
-            anyhow!(
-                "failed to find location for address 0x{vaddr:x}: {}",
-                error.to_string()
-            )
-        })?;
-        let Some(location) = location else {
-            continue;
-        };
+    // smoelius: Based on `addr2line`'s `--all` option. See:
+    // - https://github.com/gimli-rs/addr2line/blob/632348701feda978e324c5f5bd342b3ce974d589/src/bin/addr2line.rs#L185
+    // - https://github.com/gimli-rs/addr2line/blob/632348701feda978e324c5f5bd342b3ce974d589/src/bin/addr2line.rs#L34
+    let iter = loader.find_location_range(0, !0).map_err(|error| {
+        anyhow!(
+            "failed to construct location range iterator: {}",
+            error.to_string()
+        )
+    })?;
+    for (vaddr, _len, location) in iter {
         let Some(file) = location.file else {
             continue;
         };
