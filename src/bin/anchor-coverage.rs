@@ -1,4 +1,4 @@
-use anchor_coverage::{util::which, util::StripCurrentDir};
+use anchor_coverage::util::StripCurrentDir;
 use anyhow::{bail, ensure, Result};
 use std::{
     env::{args, current_dir},
@@ -127,7 +127,7 @@ fn anchor_test_skip_build(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
 }
 
 fn grep_command() -> Result<String> {
-    let path = which("solana-test-validator")?;
+    let path = anchor_coverage::util::which("solana-test-validator")?;
     Ok(format!(
         "grep SBF_TRACE_DIR {} || echo 'solana-test-validator is not patched'",
         path.display()
