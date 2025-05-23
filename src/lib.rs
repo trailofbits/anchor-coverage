@@ -1,3 +1,4 @@
+use crate::util::which;
 use addr2line::Loader;
 use anyhow::{anyhow, Result};
 use byteorder::{LittleEndian, ReadBytesExt};
@@ -137,6 +138,17 @@ If you are done generating lcov files, try running:
         pcs_paths.len(),
         sbf_trace_dir.as_ref().strip_current_dir().display()
     );
+
+    if which("genhtml").is_err() {
+        eprintln!("However, it seems that `genhtml` is not installed on your system");
+        if cfg!(target_os = "macos") {
+            eprintln!("You can  install it using Homebrew:");
+            eprintln!("     brew install lcov");
+        } else if cfg!(target_os = "linux") {
+            eprintln!("You can install it using apt:");
+            eprintln!("     apt install lcov");
+        }
+    }
 
     Ok(())
 }

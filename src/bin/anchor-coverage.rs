@@ -1,9 +1,9 @@
-use anchor_coverage::util::StripCurrentDir;
+use anchor_coverage::{util::which, util::StripCurrentDir};
 use anyhow::{bail, ensure, Result};
 use std::{
     env::{args, current_dir},
-    fs::{canonicalize, create_dir_all, remove_dir_all},
-    path::{Path, PathBuf},
+    fs::{create_dir_all, remove_dir_all},
+    path::Path,
     process::Command,
 };
 
@@ -132,13 +132,4 @@ fn grep_command() -> Result<String> {
         "grep SBF_TRACE_DIR {} || echo 'solana-test-validator is not patched'",
         path.display()
     ))
-}
-
-fn which(filename: &str) -> Result<PathBuf> {
-    let mut command = Command::new("which");
-    let output = command.arg(filename).output()?;
-    ensure!(output.status.success(), "command failed: {command:?}");
-    let stdout = std::str::from_utf8(&output.stdout)?;
-    let path = canonicalize(stdout.trim_end())?;
-    Ok(path)
 }
