@@ -303,7 +303,9 @@ fn find_applicable_dwarf<'a>(
         let shift = dwarf.start_address - vaddr_first;
 
         // smoelius: Make the shift "permanent".
-        vaddrs.iter_mut().for_each(|vaddr| *vaddr += shift);
+        for vaddr in vaddrs.iter_mut() {
+            *vaddr += shift;
+        }
 
         return Ok((dwarf, None));
     }
