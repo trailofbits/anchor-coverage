@@ -68,7 +68,9 @@ jobs:
         run: rustup update
 
       - name: Install Agave prerequisites
-        run: sudo apt install libclang-dev libudev-dev llvm protobuf-compiler
+        run: |
+          sudo apt update
+          sudo apt install libclang-dev libudev-dev llvm protobuf-compiler
 
       - name: Install Agave
         run: |
