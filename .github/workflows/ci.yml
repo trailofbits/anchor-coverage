@@ -47,6 +47,15 @@ jobs:
       GROUP_RUNNER: target.'cfg(all())'.runner = 'group-runner'
 
     steps:
+      - name: Free up space on Ubuntu
+        if: ${{ matrix.environment == 'ubuntu-latest' }}
+        run: |
+          # https://github.com/actions/runner-images/issues/2606#issuecomment-772683150
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/share/swift
+          # du -sh /usr/*/* 2>/dev/null | sort -h || true
+
       - uses: actions/checkout@v4
 
       - uses: actions/cache/restore@v4
@@ -120,7 +129,9 @@ jobs:
 
       # https://github.com/actions/cache/tree/main/save#always-save-cache
       - uses: actions/cache/save@v4
-        if: always() && steps.cache-restore.outputs.cache-hit != 'true'
+        # smoelius: Update the cache regardless of whether a cache hit occurred, in case further
+        # progress was made.
+        if: always() # && steps.cache-restore.outputs.cache-hit != 'true'
         with:
           key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
           path: |
