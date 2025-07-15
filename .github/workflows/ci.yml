@@ -86,7 +86,8 @@ jobs:
           if ! ./agave/bin/solana-test-validator --version; then
             git clone https://github.com/anza-xyz/agave
             cd agave
-            git checkout 86faa211d988143483adbe4c0cf16bb5e5798582
+            # smoelius: The next commit bumps platform tools to v1.49 in the Agave repository (PR #6628).
+            git checkout 7a753dbeeb021f0588b6172eba3cdc15c5672c2c
             sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
             # smoelius: `solana` is not used directly, but it is called by `anchor`.
             sed -i '/^binArgs=()$/i BINS=(cargo-build-sbf solana-test-validator solana); DCOU_BINS=()' scripts/cargo-install-all.sh
@@ -94,6 +95,35 @@ jobs:
             cd ..
           fi
           echo "$PWD/agave/bin" >> "$GITHUB_PATH"
+
+      # smoelius: Platform tools 1.49 does not yet incorporate anza-xyz/llvm-project#159.
+      - name: Patch platform tools
+        run: |
+          set -x
+          if [[ ! -L ~/.cache/solana/v1.49/platform-tools/rust/bin/rustc ]]; then
+            AGAVE="$PWD/agave"
+            cd ..
+            git clone https://github.com/anza-xyz/rust
+            cd rust
+            git submodule update --init
+            cd src/llvm-project
+            # smoelius: The commit below is anza-xyz/llvm-project#159. Git must be configured before
+            # `git cherry-pick` can be called.
+            git config --global user.email "you@example.com"
+            git config --global user.name "Your Name"
+            git fetch origin ecdfcf877b5053e7d85d9102118f59b64e020432
+            git cherry-pick ecdfcf877b5053e7d85d9102118f59b64e020432
+            cd ../.. # rust
+            git add src/llvm-project
+            git commit -m 'Fix debug relocation'
+            ./build.sh
+            # smoelius: Install platform tools v1.49.
+            "$AGAVE"/platform-tools-sdk/sbf/scripts/install.sh
+            RUST="$PWD"
+            cd ~/.cache/solana/v1.49/platform-tools/rust/bin
+            mv rustc rustc~
+            ln -s "$RUST"/build/x86_64-unknown-linux-gnu/stage1/bin/rustc
+          fi
 
       # smoelius: https://www.anchor-lang.com/docs/installation
       - name: Install Anchor
