@@ -86,7 +86,8 @@ jobs:
           if ! ./agave/bin/solana-test-validator --version; then
             git clone https://github.com/anza-xyz/agave
             cd agave
-            git checkout 86faa211d988143483adbe4c0cf16bb5e5798582
+            # smoelius: The next commit merges `SBPF v0.12.2`: https://github.com/anza-xyz/agave/pull/7498
+            git checkout cd291424d3d71c1a3be0c2c919916dcaa272d162
             sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
             # smoelius: `solana` is not used directly, but it is called by `anchor`.
             sed -i '/^binArgs=()$/i BINS=(cargo-build-sbf solana-test-validator solana); DCOU_BINS=()' scripts/cargo-install-all.sh
