@@ -299,7 +299,7 @@ fn _build_rust_cwd(
     let exit = std::process::Command::new("cargo")
         .arg(arch.build_subcommand())
         // smoelius: The next call to `arg` does not appear in the original.
-        .arg("--debug")
+        .args(["--debug", "--", "--tools-version", "v1.51"])
         .args(cargo_args.clone())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
