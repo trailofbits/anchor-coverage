@@ -35,6 +35,40 @@ fn basic() {
         // files generated.
         //
         // smoelius: We might additionally consider sanitizing and comparing their `insns` files.
+        //
+        // smoelius: Updates to the Rust compiler and Solana platform tools have necessitated
+        // changes to the lcov files. However, the following aspects of those files should _not_
+        // change. The `is_initialized` lcov files should show that these lines were not executed:
+        //
+        // ```rs
+        //         ctx.accounts.storage.x += 1;
+        //         ...
+        //         ctx.accounts.storage.y += 1;
+        // ```
+        //
+        // The `should_increment_x` lcov files should show that the former was executed but the
+        // latter wasn't. For `should_increment_y`, it should be the other way around. The above
+        // lines are 15 and 20 in fixtures/basic/programs/basic/src/lib.rs. So, concretely, the
+        // `is_initialized`, `should_increment_x`, and `should_increment_y` lcov files should
+        // contain the following:
+        //
+        // is_initialized:
+        // ```
+        // DA:15,0
+        // DA:20,0
+        // ```
+        //
+        // should_increment_x:
+        // ```
+        // DA:15,3
+        // DA:20,0
+        // ```
+        //
+        // should_increment_y:
+        // ```
+        // DA:15,0
+        // DA:20,3
+        // ```
 
         let snapshots_subdir = format!("basic_{test_config}");
         let expected_lcov_paths =
