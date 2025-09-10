@@ -13,6 +13,6 @@ updates:
       - dependency-type: direct
 
   - package-ecosystem: npm
-    directory: /
+    directory: /fixtures/*
     schedule:
       interval: weekly
