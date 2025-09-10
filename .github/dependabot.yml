@@ -11,3 +11,8 @@ updates:
       interval: weekly
     allow:
       - dependency-type: direct
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
