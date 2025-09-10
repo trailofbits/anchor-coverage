@@ -37,7 +37,7 @@ assert_cmd = "2.0"
 ctor = "0.5"
 lcov = "0.8"
 regex = "1.11"
-tempfile = "3.21"
+tempfile = "3.22"
 
 [features]
 default = ["__anchor_cli"]
