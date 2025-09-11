@@ -1,14 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { Basic } from "../target/types/basic";
+import { MultipleTestConfigs } from "../target/types/multiple_test_configs";
 import * as assert from "assert";
 
-describe("basic", () => {
+describe("multiple_test_configs", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.Basic as Program<Basic>;
+  const program = anchor.workspace.MultipleTestConfigs as Program<MultipleTestConfigs>;
 
   const [storage_address] = PublicKey.findProgramAddressSync(
     [Buffer.from("")],
