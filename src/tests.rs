@@ -10,6 +10,7 @@ use std::{
     sync::Mutex,
 };
 
+const BASIC_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/basic");
 const MULTIPLE_TEST_CONFIGS_DIR: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/fixtures/multiple_test_configs"
@@ -20,6 +21,35 @@ const MULTIPLE_PROGRAMS_DIR: &str =
 
 // smoelius: Only one Anchor test can be run at a time.
 static MUTEX: Mutex<()> = Mutex::new(());
+
+#[test]
+fn basic() {
+    let _lock = MUTEX.lock().unwrap();
+
+    yarn(BASIC_DIR).unwrap();
+
+    let mut command = anchor_coverage_command(BASIC_DIR);
+    let status = command.status().unwrap();
+    assert!(status.success(), "command failed: {command:?}");
+
+    let lcovs = files_with_extension(Path::new(BASIC_DIR).join("sbf_trace_dir"), "lcov").unwrap();
+    let source_files = lcovs
+        .iter()
+        .map(|lcov| {
+            let contents = read_to_string(lcov).unwrap();
+            let source_file = contents
+                .lines()
+                .next()
+                .and_then(|line| line.strip_prefix("SF:"))
+                .unwrap();
+            PathBuf::from(source_file)
+        })
+        .collect::<HashSet<_>>();
+
+    // smoelius: Verify lcov was generated.
+    let lib_rs_path = Path::new(BASIC_DIR).join("programs/basic/src/lib.rs");
+    assert!(source_files.contains(&lib_rs_path));
+}
 
 #[test]
 fn multiple_test_configs() {
