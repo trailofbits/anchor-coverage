@@ -15,7 +15,7 @@ const MULTIPLE_TEST_CONFIGS_DIR: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/fixtures/multiple_test_configs"
 );
-const CALL_EXTERNAL_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/call_external");
+const EXTERNAL_CALL_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/external_call");
 const MULTIPLE_PROGRAMS_DIR: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/multiple_programs");
 
@@ -135,11 +135,11 @@ fn multiple_test_configs() {
 fn include_cargo_does_not_change_line_hits() {
     let _lock = MUTEX.lock().unwrap();
 
-    yarn(CALL_EXTERNAL_DIR).unwrap();
+    yarn(EXTERNAL_CALL_DIR).unwrap();
 
-    let report_without_cargo = run_anchor_coverage_and_read_lcov(CALL_EXTERNAL_DIR, false).unwrap();
+    let report_without_cargo = run_anchor_coverage_and_read_lcov(EXTERNAL_CALL_DIR, false).unwrap();
 
-    let report_with_cargo = run_anchor_coverage_and_read_lcov(CALL_EXTERNAL_DIR, true).unwrap();
+    let report_with_cargo = run_anchor_coverage_and_read_lcov(EXTERNAL_CALL_DIR, true).unwrap();
 
     for (file_key, file_without_cargo) in report_without_cargo.sections {
         let file_with_cargo = report_with_cargo.sections.get(&file_key).unwrap();
