@@ -402,7 +402,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "call_external"
+name = "external_call"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",

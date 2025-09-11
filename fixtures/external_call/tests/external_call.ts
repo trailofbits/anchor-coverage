@@ -1,12 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { CallExternal } from "../target/types/call_external";
+import { ExternalCall } from "../target/types/external_call";
 
-describe("call_external", () => {
+describe("external_call", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
 
-  const program = anchor.workspace.callExternal as Program<CallExternal>;
+  const program = anchor.workspace.externalCall as Program<ExternalCall>;
 
   it("Is initialized!", async () => {
     // Add your test here.
