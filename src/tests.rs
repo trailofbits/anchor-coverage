@@ -10,7 +10,10 @@ use std::{
     sync::Mutex,
 };
 
-const BASIC_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/basic");
+const MULTIPLE_TEST_CONFIGS_DIR: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/fixtures/multiple_test_configs"
+);
 const CALL_EXTERNAL_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/call_external");
 const MULTIPLE_PROGRAMS_DIR: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/multiple_programs");
@@ -19,13 +22,13 @@ const MULTIPLE_PROGRAMS_DIR: &str =
 static MUTEX: Mutex<()> = Mutex::new(());
 
 #[test]
-fn basic() {
+fn multiple_test_configs() {
     let _lock = MUTEX.lock().unwrap();
 
-    yarn(BASIC_DIR).unwrap();
+    yarn(MULTIPLE_TEST_CONFIGS_DIR).unwrap();
 
     for test_config in ["full", "just_increment_x", "just_increment_y"] {
-        let mut command = anchor_coverage_command(BASIC_DIR);
+        let mut command = anchor_coverage_command(MULTIPLE_TEST_CONFIGS_DIR);
         command.args(["--run", &format!("test_configs/{test_config}")]);
         let status = command.status().unwrap();
         assert!(status.success(), "command failed: {command:?}");
@@ -48,8 +51,9 @@ fn basic() {
         //
         // The `should_increment_x` lcov files should show that the former was executed but the
         // latter wasn't. For `should_increment_y`, it should be the other way around. The above
-        // lines are 15 and 20 in fixtures/basic/programs/basic/src/lib.rs. So, concretely, the
-        // `is_initialized`, `should_increment_x`, and `should_increment_y` lcov files should
+        // lines are 15 and 20 in
+        // fixtures/multiple_test_configs/programs/multiple_test_configs/src/lib.rs. So, concretely,
+        // the `is_initialized`, `should_increment_x`, and `should_increment_y` lcov files should
         // contain the following:
         //
         // is_initialized:
@@ -70,7 +74,7 @@ fn basic() {
         // DA:20,3
         // ```
 
-        let snapshots_subdir = format!("basic_{test_config}");
+        let snapshots_subdir = format!("multiple_test_configs_{test_config}");
         let expected_lcov_paths =
             files_with_extension(Path::new("snapshots").join(snapshots_subdir), "lcov").unwrap();
         let expected_lcov_contents = expected_lcov_paths
@@ -79,8 +83,11 @@ fn basic() {
             .collect::<HashSet<_>>();
 
         let current_dir = current_dir().unwrap();
-        let actual_lcov_paths =
-            files_with_extension(Path::new(BASIC_DIR).join("sbf_trace_dir"), "lcov").unwrap();
+        let actual_lcov_paths = files_with_extension(
+            Path::new(MULTIPLE_TEST_CONFIGS_DIR).join("sbf_trace_dir"),
+            "lcov",
+        )
+        .unwrap();
         let actual_lcov_contents = actual_lcov_paths
             .into_iter()
             .map(|path| {
