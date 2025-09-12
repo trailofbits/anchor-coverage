@@ -402,13 +402,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "external_call"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
-]
-
-[[package]]
 name = "cargo_toml"
 version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -543,6 +536,13 @@ name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "external_call"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+]
 
 [[package]]
 name = "feature-probe"
