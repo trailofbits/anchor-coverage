@@ -32,10 +32,14 @@ solang-parser = { version = "0.3", optional = true }
 toml = { version = "0.9", optional = true }
 walkdir = { version = "2.5", optional = true }
 
+[build-dependencies]
+nested_workspace = "0.7"
+
 [dev-dependencies]
 assert_cmd = "2.0"
 ctor = "0.5"
 lcov = "0.8"
+nested_workspace = "0.7"
 regex = "1.11"
 tempfile = "3.22"
 
@@ -69,6 +73,9 @@ missing-panics-doc = "allow"
 [lints.rust.unexpected_cfgs]
 level = "deny"
 check-cfg = ["cfg(dylint_lib, values(any()))"]
+
+[package.metadata.nested_workspace]
+roots = ["fixtures/*"]
 
 [workspace.metadata.dylint]
 libraries = [
