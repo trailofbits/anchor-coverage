@@ -14,10 +14,13 @@ fn initialize() {
 fn clippy() {
     Command::new("cargo")
         .args([
-            "+nightly",
+            // smoelius: I think the Anchor fixtures do not like having `cargo +nightly clippy` run
+            // on them.
+            // "+nightly",
             "clippy",
             "--all-features",
             "--all-targets",
+            "--offline",
             "--",
             "--deny=warnings",
         ])

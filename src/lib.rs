@@ -40,9 +40,6 @@ use util::{files_with_extension, StripCurrentDir};
 mod vaddr;
 use vaddr::Vaddr;
 
-#[cfg(test)]
-mod tests;
-
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 struct Entry<'a> {
     file: &'a str,
@@ -441,4 +438,12 @@ fn write_lcov_file(pcs_path: &Path, file_line_count_map: FileLineCountMap<'_>) -
 
 fn include_cargo() -> bool {
     var_os("INCLUDE_CARGO").is_some()
+}
+
+#[cfg(test)]
+mod tests;
+
+#[test]
+fn nested_workspace() {
+    nested_workspace::test().unwrap();
 }
