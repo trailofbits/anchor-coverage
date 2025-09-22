@@ -55,7 +55,7 @@ The following is an example. The line with the assignment to `signer` is hit onl
             5 :     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
             1 :         let signer = &ctx.accounts.signer;
             4 :         let pubkey = signer.signer_key().unwrap();
-           11 :         msg!("Signer's pubkey is: {}", pubkey);
+           11 :         msg!("Signer's pubkey: {}", pubkey);
             1 :         Ok(())
             1 :     }
 ```
