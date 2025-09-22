@@ -151,7 +151,7 @@ fn build_dwarf(debug_path: &Path) -> Result<Dwarf> {
         anyhow!(
             "failed to build loader for {}: {}",
             debug_path.display(),
-            error.to_string()
+            error
         )
     })?;
 
@@ -228,12 +228,9 @@ fn build_vaddr_entry_map<'a>(loader: &'a Loader, debug_path: &Path) -> Result<Va
     let mut vaddr_entry_map = VaddrEntryMap::new();
     let metadata = metadata(debug_path)?;
     for vaddr in (0..metadata.len()).step_by(size_of::<u64>()) {
-        let location = loader.find_location(vaddr).map_err(|error| {
-            anyhow!(
-                "failed to find location for address 0x{vaddr:x}: {}",
-                error.to_string()
-            )
-        })?;
+        let location = loader
+            .find_location(vaddr)
+            .map_err(|error| anyhow!("failed to find location for address 0x{vaddr:x}: {error}"))?;
         let Some(location) = location else {
             continue;
         };
