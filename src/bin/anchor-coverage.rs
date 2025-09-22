@@ -122,7 +122,7 @@ fn anchor_test_skip_build(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
     command.args(args);
     command.env(SBF_TRACE_DIR, sbf_trace_dir);
     let status = command.status()?;
-    ensure!(status.success(), "command failed: {:?}", command);
+    ensure!(status.success(), "command failed: {command:?}");
     Ok(())
 }
 
