@@ -17,7 +17,13 @@ describe("bar", () => {
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await program.methods.initialize().rpc({
+        skipPreflight: false,
+        commitment: "finalized",
+        preflightCommitment: "processed",
+        maxRetries: 0,
+        minContextSlot: null
+    });
     console.log("Your transaction signature", tx);
   });
 

@@ -1,5 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import { PublicKey } from "@solana/web3.js";
 import { ExternalCall } from "../target/types/external_call";
 
 describe("external_call", () => {
@@ -10,7 +11,13 @@ describe("external_call", () => {
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await program.methods.initialize().rpc({
+        skipPreflight: false,
+        commitment: "finalized",
+        preflightCommitment: "processed",
+        maxRetries: 0,
+        minContextSlot: null
+    });
     console.log("Your transaction signature", tx);
     let txDetails = null;
     let nAttempts = 0;
