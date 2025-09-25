@@ -18,7 +18,7 @@ describe("multiple_test_configs", () => {
   it("Is initialized!", async () => {
     // Add your test here.
     const tx = await program.methods.initialize().rpc({
-        skipPreflight: false,
+        skipPreflight: true,
         commitment: "finalized",
         preflightCommitment: "processed",
         maxRetries: 0,

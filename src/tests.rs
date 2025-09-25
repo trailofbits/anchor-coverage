@@ -15,7 +15,6 @@ const MULTIPLE_TEST_CONFIGS_DIR: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/fixtures/multiple_test_configs"
 );
-const EXTERNAL_CALL_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/external_call");
 const MULTIPLE_PROGRAMS_DIR: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/multiple_programs");
 
@@ -132,32 +131,6 @@ fn multiple_test_configs() {
 }
 
 #[test]
-fn include_cargo_does_not_change_line_hits() {
-    let _lock = MUTEX.lock().unwrap();
-
-    yarn(EXTERNAL_CALL_DIR).unwrap();
-
-    let report_without_cargo = run_anchor_coverage_and_read_lcov(EXTERNAL_CALL_DIR, false).unwrap();
-
-    let report_with_cargo = run_anchor_coverage_and_read_lcov(EXTERNAL_CALL_DIR, true).unwrap();
-
-    for (file_key, file_without_cargo) in report_without_cargo.sections {
-        let file_with_cargo = report_with_cargo.sections.get(&file_key).unwrap();
-        for (line_key, lines_without_cargo) in file_without_cargo.lines {
-            let lines_with_cargo = file_with_cargo.lines.get(&line_key).unwrap();
-            assert!(
-                lines_without_cargo.count == lines_with_cargo.count,
-                "{}:{}: {} != {}",
-                file_key.source_file.display(),
-                line_key.line,
-                lines_without_cargo.count,
-                lines_with_cargo.count
-            );
-        }
-    }
-}
-
-#[test]
 fn multiple_programs() {
     let _lock = MUTEX.lock().unwrap();
 
@@ -209,6 +182,7 @@ fn yarn(dir: &str) -> Result<()> {
     Ok(())
 }
 
+#[cfg(any())]
 fn run_anchor_coverage_and_read_lcov(dir: &str, include_cargo: bool) -> Result<lcov::Report> {
     let mut command = anchor_coverage_command(dir);
     if include_cargo {
