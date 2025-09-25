@@ -101,6 +101,12 @@ jobs:
             sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
             # smoelius: `solana` is not used directly, but it is called by `anchor`.
             sed -i '/^binArgs=()$/i BINS=(cargo-build-sbf solana-test-validator solana); DCOU_BINS=()' scripts/cargo-install-all.sh
+
+            sed -i '/match &executor.program/i dbg!(&executor.program);' programs/bpf_loader/src/lib.rs
+            sed -i '/ic_logger_msg!(log_collector, "Program is not deployed");/i println!("{}", std::backtrace::Backtrace::force_capture());' programs/bpf_loader/src/lib.rs
+
+            git diff
+
             ./scripts/cargo-install-all.sh .
             cd ..
           fi
