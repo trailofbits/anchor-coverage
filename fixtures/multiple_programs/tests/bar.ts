@@ -16,8 +16,17 @@ describe("bar", () => {
   );
 
   it("Is initialized!", async () => {
+    const latestBlockHash = await program.provider.connection.getLatestBlockhash("finalized");
+    console.log(JSON.stringify(latestBlockHash));
+
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await program.methods.initialize().rpc({
+        skipPreflight: true,
+        commitment: "finalized",
+        preflightCommitment: "processed",
+        maxRetries: 0,
+        minContextSlot: null
+    });
     console.log("Your transaction signature", tx);
   });
 

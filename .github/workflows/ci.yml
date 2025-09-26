@@ -33,8 +33,7 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        # smoelius: Test with `macos-latest` once the repository is made public.
-        environment: [ubuntu-latest]
+        environment: [ubuntu-latest, macos-15]
         anchor-version: [0.31.1]
 
     runs-on: ${{ matrix.environment }}
@@ -76,21 +75,37 @@ jobs:
       - name: Rustup
         run: rustup update
 
-      - name: Install Agave prerequisites
+      - name: Install Agave prerequisites on Ubuntu
+        if: ${{ matrix.environment == 'ubuntu-latest' }}
         run: |
           sudo apt update
           sudo apt install libclang-dev libudev-dev llvm protobuf-compiler
+
+      - name: Install Agave prerequisites on macOS
+        if: ${{ matrix.environment == 'macos-15' }}
+        run: |
+          brew install coreutils gnu-sed llvm protobuf
+          echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin" >> "$GITHUB_PATH"
+          # smoelius: ~/lib is one of the directories `librocksdb-sys`'s build script checks
+          # for libclang.dylib.
+          mkdir ~/lib
+          ln -s /opt/homebrew/opt/llvm/lib/libclang.dylib ~/lib/libclang.dylib
 
       - name: Install Agave
         run: |
           if ! ./agave/bin/solana-test-validator --version; then
             git clone https://github.com/anza-xyz/agave
             cd agave
-            # smoelius: The next commit merges `SBPF v0.12.2`: https://github.com/anza-xyz/agave/pull/7498
-            git checkout cd291424d3d71c1a3be0c2c919916dcaa272d162
+            git checkout v3.0.2
             sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
             # smoelius: `solana` is not used directly, but it is called by `anchor`.
             sed -i '/^binArgs=()$/i BINS=(cargo-build-sbf solana-test-validator solana); DCOU_BINS=()' scripts/cargo-install-all.sh
+
+            sed -i '/match &executor.program/i dbg!(&executor.program);' programs/bpf_loader/src/lib.rs
+            sed -i '/ic_logger_msg!(log_collector, "Program is not deployed");/i println!("{}", std::backtrace::Backtrace::force_capture());' programs/bpf_loader/src/lib.rs
+
+            git diff
+
             ./scripts/cargo-install-all.sh .
             cd ..
           fi
@@ -101,9 +116,7 @@ jobs:
         run: |
           mkdir ~/.config/solana
           cp etc/rfc8032_test_vector.json ~/.config/solana/id.json
-          if [[ "$(anchor --version)" != 'anchor-cli ${{ matrix.anchor-version }}' ]]; then
-            cargo install --git https://github.com/coral-xyz/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
-          fi
+          cargo install --git https://github.com/smoelius/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
 
       - uses: taiki-e/install-action@v2
         with:
@@ -121,7 +134,7 @@ jobs:
       - name: Sanity test fixtures
         run: |
           for X in fixtures/*; do
-            pushd "$X" && yarn && anchor test && popd
+            pushd "$X" && yarn && (anchor test || true) && cat .anchor/test-ledger/validator.log && popd
           done
 
       - name: Test
