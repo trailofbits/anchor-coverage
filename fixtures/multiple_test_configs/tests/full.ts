@@ -16,6 +16,9 @@ describe("multiple_test_configs", () => {
   );
 
   it("Is initialized!", async () => {
+    const latestBlockHash = await program.provider.connection.getLatestBlockhash("finalized");
+    console.log(JSON.stringify(latestBlockHash));
+
     // Add your test here.
     const tx = await program.methods.initialize().rpc({
         skipPreflight: true,
