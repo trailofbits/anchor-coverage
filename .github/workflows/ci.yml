@@ -116,9 +116,7 @@ jobs:
         run: |
           mkdir ~/.config/solana
           cp etc/rfc8032_test_vector.json ~/.config/solana/id.json
-          if [[ "$(anchor --version)" != 'anchor-cli ${{ matrix.anchor-version }}' ]]; then
-            cargo install --git https://github.com/coral-xyz/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
-          fi
+          cargo install --git https://github.com/smoelius/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
 
       - uses: taiki-e/install-action@v2
         with:
