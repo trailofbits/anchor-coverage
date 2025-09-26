@@ -134,7 +134,7 @@ jobs:
       - name: Sanity test fixtures
         run: |
           for X in fixtures/*; do
-            pushd "$X" && yarn && (anchor test || cat .anchor/test-ledger/validator.log) && popd
+            pushd "$X" && yarn && (anchor test || true) && cat .anchor/test-ledger/validator.log && popd
           done
 
       - name: Test
