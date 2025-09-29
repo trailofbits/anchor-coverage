@@ -41,7 +41,7 @@ ctor = "0.5"
 lcov = "0.8"
 nested_workspace = "0.7"
 regex = "1.11"
-tempfile = "3.22"
+tempfile = "3.23"
 
 [features]
 default = ["__anchor_cli"]
