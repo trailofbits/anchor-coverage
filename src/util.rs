@@ -1,4 +1,6 @@
-use anyhow::Result;
+use anyhow::{ensure, Result};
+use std::fs::canonicalize;
+use std::process::Command;
 use std::{
     env::current_dir,
     ffi::OsStr,
@@ -29,4 +31,13 @@ impl StripCurrentDir for Path {
         };
         self.strip_prefix(current_dir).unwrap_or(self)
     }
+}
+
+pub fn which(filename: &str) -> Result<PathBuf> {
+    let mut command = Command::new("which");
+    let output = command.arg(filename).output()?;
+    ensure!(output.status.success(), "command failed: {command:?}");
+    let stdout = std::str::from_utf8(&output.stdout)?;
+    let path = canonicalize(stdout.trim_end())?;
+    Ok(path)
 }
