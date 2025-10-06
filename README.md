@@ -18,7 +18,7 @@ A wrapper around [`anchor test`] for computing test coverage
    export PATH=$PWD/bin:$PATH
    ```
 
-2. Add the following to `[profile.release]` section of your Anchor project's root Cargo.toml:
+2. Add the following to the `[profile.release]` section of your Anchor project's root Cargo.toml:
 
    ```toml
    debug = true
