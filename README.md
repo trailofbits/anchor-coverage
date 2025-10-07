@@ -2,9 +2,13 @@
 
 A wrapper around [`anchor test`] for computing test coverage
 
+`anchor-coverage` requires a patched Solana test validator (see below). The patch is known to work with Agave commit [cd29142](https://github.com/anza-xyz/agave/commit/cd291424d3d71c1a3be0c2c919916dcaa272d162).
+
 ## Steps to use
 
-1. Install the Agave validator [from source] after adding the following to the `[patch.crates-io]` section near the end of its Cargo.toml:
+1. Clone the [Agave repository] and checkout the commit named above.
+
+2. Add the following to the `[patch.crates-io]` section near the end of Agave's Cargo.toml, and install Agave [from source]:
 
    ```toml
    solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }
@@ -18,7 +22,7 @@ A wrapper around [`anchor test`] for computing test coverage
    export PATH=$PWD/bin:$PATH
    ```
 
-2. Add the following to the `[profile.release]` section of your Anchor project's root Cargo.toml:
+3. Add the following to the `[profile.release]` section of your Anchor project's root Cargo.toml:
 
    ```toml
    debug = true
@@ -26,7 +30,7 @@ A wrapper around [`anchor test`] for computing test coverage
 
    This tells Cargo to build with debug information.
 
-3. Run `anchor-coverage` as follows:
+4. Run `anchor-coverage` as follows:
 
    ```sh
    anchor-coverage [ANCHOR_TEST_ARGS]...
@@ -34,7 +38,7 @@ A wrapper around [`anchor test`] for computing test coverage
 
    This will create an `sbf_trace_dir` directory with an LCOV file for each executable run.
 
-4. Run the following command to generate and open an HTML coverage report:
+5. Run the following command to generate and open an HTML coverage report:
 
    ```sh
    genhtml --output-directory coverage sbf_trace_dir/*.lcov && open coverage/index.html
@@ -72,6 +76,7 @@ The following is an example. The line with the assignment to `signer` is hit onl
 
 - Useful reference re LCOV: https://github.com/linux-test-project/lcov/issues/113#issuecomment-762335134
 
+[Agave repository]: https://github.com/anza-xyz/agave
 [LLVM instrumentation-based coverage]: https://llvm.org/docs/CoverageMappingFormat.html
 [`anchor test`]: https://www.anchor-lang.com/docs/references/cli#test
 [from source]: https://docs.anza.xyz/cli/install#building-from-source
