@@ -77,20 +77,6 @@ pub fn check_deps(_cfg: &WithPath<Config>) -> Result<()> {
     Ok(())
 }
 
-pub fn build_solidity_cwd(
-    _cfg: &WithPath<Config>,
-    _name: String,
-    _path: PathBuf,
-    _idl_out: Option<PathBuf>,
-    _idl_ts_out: Option<PathBuf>,
-    _build_config: &BuildConfig,
-    _stdout: Option<File>,
-    _stderr: Option<File>,
-    _cargo_args: Vec<String>,
-) -> Result<()> {
-    Ok(())
-}
-
 pub fn build_cwd_verifiable(
     _cfg: &WithPath<Config>,
     _cargo_toml: PathBuf,

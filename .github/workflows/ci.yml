@@ -35,7 +35,7 @@ jobs:
       matrix:
         # smoelius: Test with `macos-latest` once the repository is made public.
         environment: [ubuntu-latest]
-        anchor-version: [0.31.1]
+        anchor-version: [0.32.1]
 
     runs-on: ${{ matrix.environment }}
 

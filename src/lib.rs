@@ -12,6 +12,9 @@ use std::{
 
 pub const DOCKER_BUILDER_VERSION: &str = "0.0.0";
 
+/// Default RPC port
+pub const DEFAULT_RPC_PORT: u16 = 8899;
+
 #[cfg(feature = "__anchor_cli")]
 mod anchor_cli_lib;
 #[cfg(feature = "__anchor_cli")]
