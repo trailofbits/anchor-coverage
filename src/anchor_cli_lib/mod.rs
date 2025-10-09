@@ -1,7 +1,7 @@
 // smoelius: This file is essentially the portions of the following file needed to build an Anchor
 // workspace:
 //
-//     https://github.com/solana-foundation/anchor/blob/v0.31.1/cli/src/lib.rs
+//     https://github.com/solana-foundation/anchor/blob/v0.32.1/cli/src/lib.rs
 //
 // A small addition has been made to `_build_rust_cwd` to pass `--debug` to `cargo-build-sbf`.
 //
@@ -15,36 +15,30 @@
 )]
 
 use crate::config::{
-    get_default_ledger_path, AnchorPackage, BootstrapMode, BuildConfig, Config, ConfigOverride,
-    Manifest, PackageManager, ProgramArch, ProgramDeployment, ProgramWorkspace, ScriptsConfig,
-    TestValidator, WithPath, SHUTDOWN_WAIT, STARTUP_WAIT,
+    get_default_ledger_path, BootstrapMode, BuildConfig, Config, ConfigOverride, Manifest,
+    PackageManager, ProgramArch, ProgramDeployment, ProgramWorkspace, ScriptsConfig, TestValidator,
+    WithPath, SHUTDOWN_WAIT, STARTUP_WAIT,
 };
 use anchor_client::Cluster;
 use anchor_lang::idl::{IdlAccount, IdlInstruction, ERASED_AUTHORITY};
+use anchor_lang::prelude::UpgradeableLoaderState;
+use anchor_lang::solana_program::bpf_loader_upgradeable;
 use anchor_lang::{AccountDeserialize, AnchorDeserialize, AnchorSerialize, Discriminator};
-// use anchor_lang_idl::convert::convert_idl;
+use anchor_lang_idl::convert::convert_idl;
 use anchor_lang_idl::types::{Idl, IdlArrayLen, IdlDefinedFields, IdlType, IdlTypeDefTy};
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 // use checks::{check_anchor_version, check_deps, check_idl_build_feature, check_overflow};
 use clap::{CommandFactory, Parser};
 use dirs::home_dir;
-// use flate2::read::GzDecoder;
 // use flate2::read::ZlibDecoder;
-// use flate2::write::{GzEncoder, ZlibEncoder};
+// use flate2::write::ZlibEncoder;
 // use flate2::Compression;
 use heck::{ToKebabCase, ToLowerCamelCase, ToPascalCase, ToSnakeCase};
 use regex::{Regex, RegexBuilder};
-// use reqwest::blocking::multipart::{Form, Part};
-// use reqwest::blocking::Client;
 // use rust_template::{ProgramTemplate, TestTemplate};
 // use semver::{Version, VersionReq};
-use serde::Deserialize;
 use serde_json::{json, Map, Value as JsonValue};
-// use solana_client::rpc_client::RpcClient;
-use solana_sdk::account_utils::StateMut;
-use solana_sdk::bpf_loader;
-use solana_sdk::bpf_loader_deprecated;
-use solana_sdk::bpf_loader_upgradeable::{self, UpgradeableLoaderState};
+// use solana_rpc_client::rpc_client::RpcClient;
 use solana_sdk::commitment_config::CommitmentConfig;
 use solana_sdk::compute_budget::ComputeBudgetInstruction;
 use solana_sdk::instruction::{AccountMeta, Instruction};
@@ -63,7 +57,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Stdio};
 use std::str::FromStr;
 use std::string::ToString;
-// use tar::Archive;
+use std::sync::LazyLock;
 
 mod hacks;
 pub use hacks::*;
@@ -223,19 +217,6 @@ fn build_all(
                     skip_lint,
                     no_docs,
                     &arch,
-                )?;
-            }
-            for (name, path) in cfg.get_solidity_program_list()? {
-                build_solidity_cwd(
-                    cfg,
-                    name,
-                    path,
-                    idl_out.clone(),
-                    idl_ts_out.clone(),
-                    build_config,
-                    stdout.as_ref().map(|f| f.try_clone()).transpose()?,
-                    stderr.as_ref().map(|f| f.try_clone()).transpose()?,
-                    cargo_args.clone(),
                 )?;
             }
             Ok(())
@@ -453,6 +434,9 @@ fn keys_sync(cfg_override: &ConfigOverride, program_name: Option<String>) -> Res
             .build()
             .unwrap();
 
+        let cfg_cluster = cfg.provider.cluster.to_owned();
+        println!("Syncing program ids for the configured cluster ({cfg_cluster})\n");
+
         let mut changed_src = false;
         for program in cfg.get_programs(program_name)? {
             // Get the pubkey from the keypair file
@@ -486,7 +470,12 @@ fn keys_sync(cfg_override: &ConfigOverride, program_name: Option<String>) -> Res
             }
 
             // Handle declaration in Anchor.toml
-            'outer: for programs in cfg.programs.values_mut() {
+            'outer: for (cluster, programs) in &mut cfg.programs {
+                // Only change if the configured cluster matches the program's cluster
+                if cluster != &cfg_cluster {
+                    continue;
+                }
+
                 for (name, deployment) in programs {
                     // Skip other programs
                     if name != &program.lib_name {
@@ -494,10 +483,7 @@ fn keys_sync(cfg_override: &ConfigOverride, program_name: Option<String>) -> Res
                     }
 
                     if deployment.address.to_string() != actual_program_id {
-                        println!(
-                            "Found incorrect program id declaration in Anchor.toml for the \
-                             program `{name}`"
-                        );
+                        println!("Found incorrect program id declaration in Anchor.toml for the program `{name}`");
 
                         // Update the program id
                         deployment.address = Pubkey::from_str(&actual_program_id).unwrap();
