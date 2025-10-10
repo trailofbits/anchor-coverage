@@ -279,7 +279,8 @@ fn _build_rust_cwd(
 ) -> Result<()> {
     let exit = std::process::Command::new("cargo")
         .arg(arch.build_subcommand())
-        // smoelius: The next call to `arg` does not appear in the original.
+        // smoelius: The next call to `arg` does not appear in the original. Passing `--debug` to
+        // `cargo-build-sbf` causes it to build with debug symbols.
         .arg("--debug")
         .args(cargo_args.clone())
         .stdout(Stdio::inherit())
