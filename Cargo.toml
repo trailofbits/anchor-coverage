@@ -39,7 +39,7 @@ nested_workspace = "0.7"
 
 [dev-dependencies]
 assert_cmd = "2.0"
-ctor = "0.5"
+ctor = "0.6"
 lcov = "0.8"
 nested_workspace = "0.7"
 regex = "1.11"
