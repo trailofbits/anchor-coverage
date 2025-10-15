@@ -1,6 +1,11 @@
 use assert_cmd::Command;
 use regex::Regex;
-use std::{env::remove_var, ffi::OsStr, fs::read_to_string, path::Path};
+use std::{
+    env::remove_var,
+    ffi::OsStr,
+    fs::{read, read_to_string},
+    path::Path,
+};
 use walkdir::WalkDir;
 
 #[ctor::ctor]
@@ -86,6 +91,17 @@ fn no_package_lock_json() {
         let entry = result.unwrap();
         assert_ne!(entry.file_name(), OsStr::new("package-lock.json"));
     }
+}
+
+#[test]
+fn readme_contains_agave_tag() {
+    let agave_tag = read_to_string("agave_tag.txt")
+        .map(|s| s.trim_end().to_owned())
+        .unwrap();
+    let readme = read("README.md").unwrap();
+    assert!(readme
+        .windows(agave_tag.len())
+        .any(|w| w == agave_tag.as_bytes()));
 }
 
 #[test]
