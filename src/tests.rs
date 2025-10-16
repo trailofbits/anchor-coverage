@@ -1,14 +1,26 @@
-use crate::util::files_with_extension;
-use anyhow::{ensure, Result};
+use crate::util::{files_with_extension, patched_agave_tools};
+use anyhow::{anyhow, ensure, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use std::{
     collections::HashSet,
     env::current_dir,
-    fs::read_to_string,
+    fs::{read_to_string, remove_file},
     path::{Path, PathBuf},
     process::Command,
-    sync::Mutex,
+    sync::{LazyLock, Mutex, MutexGuard},
 };
+
+const SBPF_COVERAGE_DOWNLOAD_URL: &str =
+    "https://github.com/trail-of-forks/sbpf-coverage/releases/download";
+
+#[cfg(target_os = "linux")]
+const OS: &str = "Linux";
+
+#[cfg(target_os = "macos")]
+const OS: &str = "macOS";
+
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+compile_error!("Only Linux and macOS are supported.");
 
 const BASIC_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/basic");
 const MULTIPLE_TEST_CONFIGS_DIR: &str = concat!(
@@ -19,14 +31,18 @@ const EXTERNAL_CALL_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/e
 const MULTIPLE_PROGRAMS_DIR: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/fixtures/multiple_programs");
 
+static AGAVE_TAG: LazyLock<String> = LazyLock::new(|| {
+    read_to_string("agave_tag.txt")
+        .map(|s| s.trim_end().to_owned())
+        .unwrap()
+});
+
 // smoelius: Only one Anchor test can be run at a time.
 static MUTEX: Mutex<()> = Mutex::new(());
 
 #[test]
 fn basic() {
-    let _lock = MUTEX.lock().unwrap();
-
-    yarn(BASIC_DIR).unwrap();
+    let _lock = prepare_for_testing(BASIC_DIR).unwrap();
 
     let mut command = anchor_coverage_command(BASIC_DIR);
     let status = command.status().unwrap();
@@ -53,9 +69,7 @@ fn basic() {
 
 #[test]
 fn multiple_test_configs() {
-    let _lock = MUTEX.lock().unwrap();
-
-    yarn(MULTIPLE_TEST_CONFIGS_DIR).unwrap();
+    let _lock = prepare_for_testing(MULTIPLE_TEST_CONFIGS_DIR).unwrap();
 
     for test_config in ["full", "just_increment_x", "just_increment_y"] {
         let mut command = anchor_coverage_command(MULTIPLE_TEST_CONFIGS_DIR);
@@ -133,9 +147,7 @@ fn multiple_test_configs() {
 
 #[test]
 fn include_cargo_does_not_change_line_hits() {
-    let _lock = MUTEX.lock().unwrap();
-
-    yarn(EXTERNAL_CALL_DIR).unwrap();
+    let _lock = prepare_for_testing(EXTERNAL_CALL_DIR).unwrap();
 
     let report_without_cargo = run_anchor_coverage_and_read_lcov(EXTERNAL_CALL_DIR, false).unwrap();
 
@@ -159,9 +171,7 @@ fn include_cargo_does_not_change_line_hits() {
 
 #[test]
 fn multiple_programs() {
-    let _lock = MUTEX.lock().unwrap();
-
-    yarn(MULTIPLE_PROGRAMS_DIR).unwrap();
+    let _lock = prepare_for_testing(MULTIPLE_PROGRAMS_DIR).unwrap();
 
     let mut command = anchor_coverage_command(MULTIPLE_PROGRAMS_DIR);
     let status = command.status().unwrap();
@@ -199,6 +209,42 @@ fn multiple_programs() {
             .join("src/lib.rs");
         assert!(source_files.contains(&lib_rs_path));
     }
+}
+
+fn prepare_for_testing(dir: &str) -> Result<MutexGuard<'_, ()>> {
+    download_patched_agave_tools(dir)?;
+
+    yarn(dir)?;
+
+    MUTEX.lock().map_err(|error| anyhow!("{error}"))
+}
+
+fn download_patched_agave_tools(dir: impl AsRef<Path>) -> Result<()> {
+    #[allow(clippy::redundant_pattern_matching)]
+    if let Some(_) = patched_agave_tools(&dir)? {
+        return Ok(());
+    }
+
+    let filename = format!("patched-agave-tools-{}-{}.tar.gz", *AGAVE_TAG, OS);
+
+    let mut command = Command::new("wget");
+    command.arg(format!(
+        "{SBPF_COVERAGE_DOWNLOAD_URL}/{}/{}",
+        *AGAVE_TAG, filename
+    ));
+    command.current_dir(&dir);
+    let status = command.status()?;
+    ensure!(status.success(), "command failed: {command:?}");
+
+    let mut command = Command::new("tar");
+    command.args(["xzf", &filename]);
+    command.current_dir(&dir);
+    let status = command.status()?;
+    ensure!(status.success(), "command failed: {command:?}");
+
+    remove_file(dir.as_ref().join(filename))?;
+
+    Ok(())
 }
 
 fn yarn(dir: &str) -> Result<()> {

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use std::{
     env::current_dir,
     ffi::OsStr,
@@ -18,6 +18,40 @@ pub fn files_with_extension(dir: impl AsRef<Path>, extension: &str) -> Result<Ve
         }
     }
     Ok(pcs_paths)
+}
+
+pub fn patched_agave_tools(path: impl AsRef<Path>) -> Result<Option<PathBuf>> {
+    let mut path_bufs = Vec::new();
+    for result in read_dir(path)? {
+        let entry = result?;
+        let path = entry.path();
+        let Some(file_name) = path.file_name() else {
+            continue;
+        };
+        if file_name
+            .to_str()
+            .is_none_or(|s| !s.starts_with("patched-agave-tools-"))
+        {
+            continue;
+        }
+        if !path.is_dir() {
+            eprintln!(
+                "Warning: Found `{}` but it is not a directory. If it contains patched Agave \
+                 tools that you want to use, please unzip and untar it.",
+                path.display()
+            );
+            continue;
+        }
+        path_bufs.push(path);
+    }
+    let mut iter = path_bufs.into_iter();
+    let Some(path_buf) = iter.next() else {
+        return Ok(None);
+    };
+    if iter.next().is_some() {
+        bail!("Found multiple patched Agave tools directories");
+    }
+    Ok(Some(path_buf))
 }
 
 pub trait StripCurrentDir {

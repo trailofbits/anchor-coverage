@@ -58,8 +58,7 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - uses: actions/cache/restore@v4
-        id: cache-restore
+      - uses: actions/cache@v4
         with:
           key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
           path: |
@@ -70,31 +69,15 @@ jobs:
             ~/.cargo/git/db/
             ~/.dylint_drivers/
             ~/.rustup/toolchains/
-            agave/
             target/dylint/
 
       - name: Rustup
         run: rustup update
 
-      - name: Install Agave prerequisites
+      - name: Install Anchor prerequisites
         run: |
           sudo apt update
-          sudo apt install libclang-dev libudev-dev llvm protobuf-compiler
-
-      - name: Install Agave
-        run: |
-          if ! ./agave/bin/solana-test-validator --version; then
-            git clone https://github.com/anza-xyz/agave
-            cd agave
-            # smoelius: The next commit merges `SBPF v0.12.2`: https://github.com/anza-xyz/agave/pull/7498
-            git checkout cd291424d3d71c1a3be0c2c919916dcaa272d162
-            sed -i '/^\[patch\.crates-io\]$/a solana-sbpf = { git = "https://github.com/trail-of-forks/sbpf-coverage" }' Cargo.toml
-            # smoelius: `solana` is not used directly, but it is called by `anchor`.
-            sed -i '/^binArgs=()$/i BINS=(cargo-build-sbf solana-test-validator solana); DCOU_BINS=()' scripts/cargo-install-all.sh
-            ./scripts/cargo-install-all.sh .
-            cd ..
-          fi
-          echo "$PWD/agave/bin" >> "$GITHUB_PATH"
+          sudo apt install libudev-dev
 
       # smoelius: https://www.anchor-lang.com/docs/installation
       - name: Install Anchor
@@ -120,31 +103,21 @@ jobs:
 
       - name: Sanity test fixtures
         run: |
+          AGAVE_TAG="$(cat agave_tag.txt)"
           for X in fixtures/*; do
-            pushd "$X" && yarn && anchor test && popd
+            pushd "$X"
+            yarn
+            wget https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
+            tar xzf patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
+            rm -f patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
+            PATH="$PWD/patched-agave-tools-$AGAVE_TAG-Linux/bin:$PATH"
+            anchor test
+            popd
           done
 
       - name: Test
         run: |
           cargo test --config "$GROUP_RUNNER"
-
-      # https://github.com/actions/cache/tree/main/save#always-save-cache
-      - uses: actions/cache/save@v4
-        # smoelius: Update the cache regardless of whether a cache hit occurred, in case further
-        # progress was made.
-        if: always() # && steps.cache-restore.outputs.cache-hit != 'true'
-        with:
-          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
-          path: |
-            ~/.avm
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            ~/.dylint_drivers/
-            ~/.rustup/toolchains/
-            agave/
-            target/dylint/
 
   all-checks:
     needs: [test]
