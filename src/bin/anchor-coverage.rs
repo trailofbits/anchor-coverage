@@ -1,8 +1,10 @@
-use anchor_coverage::util::StripCurrentDir;
+use anchor_coverage::util::{var_guard::VarGuard, StripCurrentDir};
 use anyhow::{bail, ensure, Result};
 use std::{
-    env::{args, current_dir},
-    fs::{canonicalize, create_dir_all, remove_dir_all},
+    env::{args, current_dir, join_paths, split_paths, var_os},
+    ffi::OsString,
+    fmt::Write,
+    fs::{canonicalize, create_dir_all, read, remove_dir_all},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -34,6 +36,18 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
 
     let current_dir = current_dir()?;
 
+    // smoelius: Set `PATH` now, once and for all. This way subsequent calls to `which` will return
+    // paths to the tools actually used.
+    let _guard: VarGuard;
+    if let Some(path_buf) = anchor_coverage::util::patched_agave_tools(&current_dir)? {
+        eprintln!(
+            "Found patched Agave tools: {}",
+            path_buf.strip_current_dir().display()
+        );
+        let prepended_paths = prepend_paths(path_buf.join("bin"))?;
+        _guard = VarGuard::set("PATH", Some(prepended_paths));
+    }
+
     let sbf_trace_dir = current_dir.join("sbf_trace_dir");
 
     if sbf_trace_dir.try_exists()? {
@@ -48,21 +62,30 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
     let pcs_paths = anchor_coverage::util::files_with_extension(&sbf_trace_dir, "pcs")?;
 
     if pcs_paths.is_empty() {
-        let try_running_message = grep_command()
-            .map(|command| {
-                format!(
-                    " Try running the following command:
-    {command}"
-                )
-            })
-            .unwrap_or_default();
-
-        bail!(
-            "Found no program counter files in: {}
-Are you sure your `solana-test-validator` is patched?{}",
-            sbf_trace_dir.strip_current_dir().display(),
-            try_running_message
+        let mut message = format!(
+            "Found no program counter files in: {}",
+            sbf_trace_dir.strip_current_dir().display()
         );
+        let path = which("solana-test-validator")?;
+        if !solana_test_validator_is_patched(&path)? {
+            #[rustfmt::skip]
+            write!(
+                &mut message,
+                "\n
+`{}` does not appear to be patched.
+
+Either download, unzip, and untar prebuilt patched binaries from:
+
+    https://github.com/trail-of-forks/sbpf-coverage/releases
+
+Or build patched binaries from source using the instructions at:
+
+    https://github.com/trail-of-forks/sbpf-coverage",
+                path.display()
+            )
+            .unwrap();
+        }
+        bail!(message);
     }
 
     anchor_coverage::run(sbf_trace_dir, options.debug)?;
@@ -88,6 +111,16 @@ fn parse_args() -> Options {
         })
         .collect::<Vec<_>>();
     Options { args, debug, help }
+}
+
+fn prepend_paths(path: PathBuf) -> Result<OsString> {
+    let Some(paths) = var_os("PATH") else {
+        bail!("`PATH` is unset");
+    };
+    let paths_split = split_paths(&paths);
+    let paths_chained = std::iter::once(path).chain(paths_split);
+    let paths_joined = join_paths(paths_chained)?;
+    Ok(paths_joined)
 }
 
 fn anchor_test_with_debug(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
@@ -126,12 +159,12 @@ fn anchor_test_skip_build(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-fn grep_command() -> Result<String> {
-    let path = which("solana-test-validator")?;
-    Ok(format!(
-        "grep SBF_TRACE_DIR {} || echo 'solana-test-validator is not patched'",
-        path.display()
-    ))
+fn solana_test_validator_is_patched(path: &Path) -> Result<bool> {
+    let contents = read(path)?;
+    let needle = "SBF_TRACE_DIR";
+    Ok(contents
+        .windows(needle.len())
+        .any(|w| w == needle.as_bytes()))
 }
 
 fn which(filename: &str) -> Result<PathBuf> {
