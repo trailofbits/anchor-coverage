@@ -343,11 +343,9 @@ fn generate_idl(
     // smoelius: If `RUSTUP_TOOLCHAIN` is not cleared, `Span::unwrap` might not be found in
     // `proc-macro2`. The affected code is in `anchor-syn`:
     // https://github.com/solana-foundation/anchor/blob/38f2b554b2dc6632376241f94048639eaf33d7bd/lang/syn/src/idl/defined.rs#L498-L502
-    let rustup_toolchain = std::env::var_os("RUSTUP_TOOLCHAIN");
-    if rustup_toolchain.is_some() {
-        unsafe {
-            std::env::remove_var("RUSTUP_TOOLCHAIN");
-        }
+    let _guard: crate::util::var_guard::VarGuard;
+    if std::env::var_os("RUSTUP_TOOLCHAIN").is_some() {
+        _guard = crate::util::var_guard::VarGuard::set("RUSTUP_TOOLCHAIN", None);
     }
 
     let result = anchor_lang_idl::build::IdlBuilder::new()
@@ -356,12 +354,6 @@ fn generate_idl(
         .no_docs(no_docs)
         .cargo_args(cargo_args.into())
         .build();
-
-    if let Some(rustup_toolchain) = rustup_toolchain {
-        unsafe {
-            std::env::set_var("RUSTUP_TOOLCHAIN", rustup_toolchain);
-        }
-    }
 
     result
 }
