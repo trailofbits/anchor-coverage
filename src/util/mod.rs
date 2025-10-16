@@ -6,6 +6,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+pub mod var_guard;
+
 pub fn files_with_extension(dir: impl AsRef<Path>, extension: &str) -> Result<Vec<PathBuf>> {
     let mut pcs_paths = Vec::new();
     for result in read_dir(dir)? {
