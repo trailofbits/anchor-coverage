@@ -107,7 +107,7 @@ jobs:
           for X in fixtures/*; do
             pushd "$X"
             yarn
-            wget https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
+            wget --quiet https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
             tar xzf patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
             rm -f patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
             PATH="$PWD/patched-agave-tools-$AGAVE_TAG-Linux/bin:$PATH"
