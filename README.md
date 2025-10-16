@@ -2,7 +2,7 @@
 
 A wrapper around [`anchor test`] for computing test coverage
 
-`anchor-coverage` requires a patched `solana-test-validator` (see below). The patch is known to work with [Agave v3.0.6](https://github.com/anza-xyz/agave/tree/v3.0.6).
+`anchor-coverage` requires a [patched] `solana-test-validator` (see below). The patch is known to work with [Agave v3.0.6](https://github.com/anza-xyz/agave/tree/v3.0.6).
 
 ## Steps to use
 
@@ -67,3 +67,4 @@ The following is an example. The line with the assignment to `signer` is hit onl
 [Releases]: https://github.com/trail-of-forks/sbpf-coverage/releases
 [`anchor test`]: https://www.anchor-lang.com/docs/references/cli#test
 [from source]: https://docs.anza.xyz/cli/install#building-from-source
+[patched]: https://github.com/trail-of-forks/sbpf-coverage
