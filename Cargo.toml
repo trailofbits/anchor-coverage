@@ -12,6 +12,7 @@ addr2line = "0.25"
 anyhow = "1.0"
 byteorder = "1.5"
 cargo_metadata = "0.23"
+toml = "0.9"
 
 # smoelius: Dependencies needed for `__anchor_cli`.
 anchor-client = { version = "0.32", optional = true }
@@ -31,7 +32,6 @@ serde_json = { version = "1.0", optional = true }
 shellexpand = { version = "3.1", optional = true }
 solana-cli-config = { version = "3.0", optional = true }
 solana-sdk = { version = "2.3", optional = true }
-toml = { version = "0.9", optional = true }
 walkdir = { version = "2.5", optional = true }
 
 [build-dependencies]
@@ -62,7 +62,6 @@ __anchor_cli = [
     "shellexpand",
     "solana-cli-config",
     "solana-sdk",
-    "toml",
     "walkdir",
 ]
 
