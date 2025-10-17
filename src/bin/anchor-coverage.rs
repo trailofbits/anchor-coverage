@@ -51,7 +51,7 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
     let sbf_trace_dir = current_dir.join("sbf_trace_dir");
 
     if sbf_trace_dir.try_exists()? {
-        eprintln!("Warning: Removing `{}`", sbf_trace_dir.display());
+        eprintln!("Removing `{}`", sbf_trace_dir.display());
         remove_dir_all(&sbf_trace_dir)?;
     }
 
