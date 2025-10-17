@@ -4,10 +4,11 @@ use std::{
     env::{args, current_dir, join_paths, split_paths, var_os},
     ffi::OsString,
     fmt::Write,
-    fs::{canonicalize, create_dir_all, read, remove_dir_all},
+    fs::{canonicalize, create_dir_all, read, read_to_string, remove_dir_all},
     path::{Path, PathBuf},
     process::Command,
 };
+use toml::{Table, Value};
 
 const SBF_TRACE_DIR: &str = "SBF_TRACE_DIR";
 
@@ -46,6 +47,13 @@ Usage: {0} [ANCHOR_TEST_ARGS]...
         );
         let prepended_paths = prepend_paths(path_buf.join("bin"))?;
         _guard = VarGuard::set("PATH", Some(prepended_paths));
+    }
+
+    if !profile_release_has_debug()? {
+        eprintln!(
+            "Warning: Could not find `debug = true` under `[profile.release]`; `anchor-coverage` \
+             may not work correctly"
+        );
     }
 
     let sbf_trace_dir = current_dir.join("sbf_trace_dir");
@@ -121,6 +129,22 @@ fn prepend_paths(path: PathBuf) -> Result<OsString> {
     let paths_chained = std::iter::once(path).chain(paths_split);
     let paths_joined = join_paths(paths_chained)?;
     Ok(paths_joined)
+}
+
+fn profile_release_has_debug() -> Result<bool> {
+    // smoelius: If Cargo.toml cannot be found, proceed as if everything is okay.
+    let Ok(contents) = read_to_string("Cargo.toml") else {
+        return Ok(true);
+    };
+    let table = contents.parse::<Table>()?;
+    Ok(table
+        .get("profile")
+        .and_then(Value::as_table)
+        .and_then(|table| table.get("release"))
+        .and_then(Value::as_table)
+        .and_then(|table| table.get("debug"))
+        .and_then(Value::as_bool)
+        .unwrap_or(false))
 }
 
 fn anchor_test_with_debug(args: &[String], sbf_trace_dir: &Path) -> Result<()> {
