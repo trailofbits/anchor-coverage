@@ -2,7 +2,7 @@
 
 A wrapper around [`anchor test`] for computing test coverage
 
-`anchor-coverage` requires a [patched] `solana-test-validator` (see below). The patch is known to work with [Agave v3.0.6](https://github.com/anza-xyz/agave/tree/v3.0.6).
+`anchor-coverage` requires a [patched] `solana-test-validator` (see below). The patch is known to work with [Agave v3.0.7](https://github.com/anza-xyz/agave/tree/v3.0.6).
 
 ## Steps to use
 
