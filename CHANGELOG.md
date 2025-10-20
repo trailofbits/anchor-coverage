@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Warn when `debug = true` cannot be found under `[profile.release]` ([#145](https://github.com/trailofbits/anchor-coverage/pull/145))
+
 ## 0.2.0
 
 - Provide instructions for using prebuilt patched binaries from `sbpf-coverage` [Releases](https://github.com/trail-of-forks/sbpf-coverage/releases) ([#139](https://github.com/trailofbits/anchor-coverage/pull/139))
