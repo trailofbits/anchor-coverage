@@ -25,16 +25,20 @@ pub fn patched_agave_tools(path: impl AsRef<Path>) -> Result<Option<PathBuf>> {
     for result in read_dir(path)? {
         let entry = result?;
         let path = entry.path();
-        let Some(file_name) = path.file_name() else {
+        let Some(file_name) = path.file_name().and_then(OsStr::to_str) else {
             continue;
         };
-        if file_name
-            .to_str()
-            .is_none_or(|s| !s.starts_with("patched-agave-tools-"))
-        {
+        if !file_name.starts_with("patched-agave-tools-") {
             continue;
         }
         if !path.is_dir() {
+            // smoelius: Don't warn if there is an adjacent directory with the same basename.
+            if let Some(file_stem) = file_name.strip_suffix(".tar.gz")
+                && let Some(parent) = path.parent()
+                && parent.join(file_stem).is_dir()
+            {
+                continue;
+            }
             eprintln!(
                 "Warning: Found `{}` but it is not a directory. If it contains patched Agave \
                  tools that you want to use, please unzip and untar it.",

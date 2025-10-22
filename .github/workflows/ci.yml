@@ -109,7 +109,6 @@ jobs:
             yarn
             wget --quiet https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
             tar xzf patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
-            rm -f patched-agave-tools-$AGAVE_TAG-Linux.tar.gz
             PATH="$PWD/patched-agave-tools-$AGAVE_TAG-Linux/bin:$PATH"
             anchor test
             popd
