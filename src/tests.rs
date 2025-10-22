@@ -4,7 +4,7 @@ use assert_cmd::cargo::CommandCargoExt;
 use std::{
     collections::HashSet,
     env::current_dir,
-    fs::{read_to_string, remove_file},
+    fs::read_to_string,
     path::{Path, PathBuf},
     process::Command,
     sync::{LazyLock, Mutex, MutexGuard},
@@ -241,8 +241,6 @@ fn download_patched_agave_tools(dir: impl AsRef<Path>) -> Result<()> {
     command.current_dir(&dir);
     let status = command.status()?;
     ensure!(status.success(), "command failed: {command:?}");
-
-    remove_file(dir.as_ref().join(filename))?;
 
     Ok(())
 }
