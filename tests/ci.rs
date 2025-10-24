@@ -89,12 +89,13 @@ fn no_package_lock_json() {
 }
 
 #[test]
-fn readme_contains_agave_tag() {
+fn readme_contains_agave_tag_in_two_places() {
     let agave_tag = read_to_string("agave_tag.txt")
         .map(|s| s.trim_end().to_owned())
         .unwrap();
     let readme = read_to_string("README.md").unwrap();
-    assert!(readme.contains(&agave_tag));
+    let i = readme.find(&agave_tag).unwrap();
+    assert!(readme[i + agave_tag.len()..].contains(&agave_tag));
 }
 
 #[test]
