@@ -1,5 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import { retry } from "retry";
 import { ExternalCall } from "../target/types/external_call";
 
 describe("external_call", () => {
@@ -10,7 +11,7 @@ describe("external_call", () => {
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await retry(() => program.methods.initialize().rpc());
     console.log("Your transaction signature", tx);
     let txDetails = null;
     let nAttempts = 0;
