@@ -38,6 +38,26 @@ fn dylint() {
 }
 
 #[test]
+fn fixtures_test_for_initialization_repeatedly() {
+    for result in WalkDir::new("fixtures")
+        .into_iter()
+        .filter_entry(|entry| entry.file_name() != "target")
+    {
+        let entry = result.unwrap();
+        let path = entry.path();
+        if path.extension() != Some(OsStr::new("ts")) {
+            continue;
+        }
+        if path.parent().and_then(Path::file_name) != Some(OsStr::new("tests")) {
+            continue;
+        }
+        let contents = read_to_string(path).unwrap();
+        assert!(contents.lines().any(|line| line.trim()
+            == "const tx = await retry(() => program.methods.initialize().rpc());"));
+    }
+}
+
+#[test]
 fn fmt() {
     Command::new("cargo")
         .args(["+nightly", "fmt", "--check"])
