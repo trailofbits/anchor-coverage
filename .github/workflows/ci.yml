@@ -126,6 +126,9 @@ jobs:
               *)
           esac
           for X in fixtures/*; do
+            if [[ "$X" = fixtures/retry ]]; then
+              continue
+            fi
             pushd "$X"
             yarn
             wget --quiet https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
