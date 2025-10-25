@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
+import { retry } from "retry";
 import { Basic } from "../target/types/basic";
 import * as assert from "assert";
 
@@ -17,7 +18,7 @@ describe("basic", () => {
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.methods.initialize().rpc();
+    const tx = await retry(() => program.methods.initialize().rpc());
     console.log("Your transaction signature", tx);
   });
 
