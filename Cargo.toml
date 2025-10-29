@@ -38,7 +38,7 @@ walkdir = { version = "2.5", optional = true }
 nested_workspace = "0.7"
 
 [dev-dependencies]
-assert_cmd = "2.0"
+assert_cmd = "2.1"
 ctor = "0.6"
 lcov = "0.8"
 nested_workspace = "0.7"
