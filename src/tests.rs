@@ -1,6 +1,5 @@
 use crate::util::{files_with_extension, patched_agave_tools};
 use anyhow::{anyhow, ensure, Result};
-use assert_cmd::cargo::CommandCargoExt;
 use std::{
     collections::HashSet,
     env::current_dir,
@@ -268,7 +267,15 @@ fn run_anchor_coverage_and_read_lcov(dir: &str, include_cargo: bool) -> Result<l
 }
 
 fn anchor_coverage_command(dir: impl AsRef<Path>) -> Command {
-    let mut command = Command::cargo_bin("anchor-coverage").unwrap();
+    let mut command = Command::new("cargo");
+    command.args([
+        "run",
+        "--bin=anchor-coverage",
+        "--manifest-path",
+        env!("CARGO_MANIFEST_PATH"),
+        "--quiet",
+        "--",
+    ]);
     command.current_dir(dir);
     command
 }
