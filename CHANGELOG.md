@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Don't warn about tarballs that have already been unpacked ([#150](https://github.com/trailofbits/anchor-coverage/pull/150))
+
 ## 0.3.0
 
 - Warn when `debug = true` cannot be found under `[profile.release]` ([#145](https://github.com/trailofbits/anchor-coverage/pull/145))
