@@ -1,6 +1,6 @@
 [package]
 name = "anchor-coverage"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Samuel Moelius <sam@moeli.us>"]
 description = "A wrapper around `anchor test` for computing test coverage"
 edition = "2024"
