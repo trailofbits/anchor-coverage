@@ -11,6 +11,8 @@ updates:
       cargo:
         patterns:
           - "*"
+    ignore:
+      dependency-name: "solana-sdk"
     schedule:
       interval: weekly
     allow:
