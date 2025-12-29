@@ -7,6 +7,10 @@ updates:
 
   - package-ecosystem: cargo
     directory: /
+    groups:
+      cargo:
+        patterns:
+          - "*"
     schedule:
       interval: weekly
     allow:
@@ -15,5 +19,9 @@ updates:
   - package-ecosystem: npm
     directories:
       - /fixtures/*
+    groups:
+      npm:
+        patterns:
+          - "*"
     schedule:
       interval: weekly
