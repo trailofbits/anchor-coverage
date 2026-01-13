@@ -245,7 +245,7 @@ dependencies = [
  "solana-cli-config",
  "solana-sdk",
  "tempfile",
- "toml 0.9.10+spec-1.1.0",
+ "toml 0.9.11+spec-1.1.0",
  "walkdir",
 ]
 
@@ -574,9 +574,9 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "assert_cmd"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcbb6924530aa9e0432442af08bbcafdad182db80d2e560da42a6d442535bf85"
+checksum = "9c5bcfa8749ac45dd12cb11055aeeb6b27a3895560d60d71e3c23bf979e60514"
 dependencies = [
  "anstyle",
  "bstr",
@@ -978,7 +978,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "374b7c592d9c00c1f4972ea58390ac6b18cbb6ab79011f3bdc90a0b82ca06b77"
 dependencies = [
  "serde",
- "toml 0.9.10+spec-1.1.0",
+ "toml 0.9.11+spec-1.1.0",
 ]
 
 [[package]]
@@ -3753,9 +3753,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.148"
+version = "1.0.149"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3084b546a1dd6289475996f182a22aba973866ea8e8b02c51d9f46b1336a22da"
+checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
 dependencies = [
  "itoa",
  "memchr",
@@ -4175,9 +4175,9 @@ dependencies = [
 
 [[package]]
 name = "solana-clap-utils"
-version = "3.1.5"
+version = "3.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b7622a29505a04f0d900bbbb9e24a5efbc51b059a3bd4db742428b8119ea910"
+checksum = "e02ceca9a77472dc6ad4e0d54ca83501b724985c16768c9d8b26e5f358111483"
 dependencies = [
  "chrono",
  "clap 2.34.0",
@@ -4205,9 +4205,9 @@ dependencies = [
 
 [[package]]
 name = "solana-cli-config"
-version = "3.1.5"
+version = "3.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e04062230983178d36f9ecf39e7936f5f62331056e712f7e97b4d35d0cc2014"
+checksum = "f9f8529cdbcb608841490d2f66a66617e991efcb8acbfaa038fd154a6685348f"
 dependencies = [
  "dirs-next",
  "serde",
@@ -5237,9 +5237,9 @@ dependencies = [
 
 [[package]]
 name = "solana-remote-wallet"
-version = "3.1.5"
+version = "3.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70604c17f4731e947ccf77040f11734862554211346c70156450327ab883ebdd"
+checksum = "4e068304b987f1c1db02f11e1fad01e1d85bca8ecbc4f61db88a268f6927fc74"
 dependencies = [
  "console 0.16.1",
  "dialoguer",
@@ -6753,9 +6753,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.9.10+spec-1.1.0"
+version = "0.9.11+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0825052159284a1a8b4d6c0c86cbc801f2da5afd2b225fa548c72f2e74002f48"
+checksum = "f3afc9a848309fe1aaffaed6e1546a7a14de1f935dc9d89d32afd9a44bab7c46"
 dependencies = [
  "indexmap",
  "serde_core",
