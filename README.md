@@ -60,7 +60,7 @@ The following is an example. The line with the assignment to `signer` is hit onl
 
 ## Links
 
-- Useful reference re LCOV: https://github.com/linux-test-project/lcov/issues/113#issuecomment-762335134
+- Useful reference re LCOV: [gifnksm/lcov/src/record/mod.rs#L24-L206](https://github.com/gifnksm/lcov/blob/ee7e052aa8bd32c8863edc6f728a1e6f3ad1aa96/lcov/src/record/mod.rs#L24-L206)
 
 [Agave repository]: https://github.com/anza-xyz/agave
 [LLVM instrumentation-based coverage]: https://llvm.org/docs/CoverageMappingFormat.html
