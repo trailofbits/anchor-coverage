@@ -15,8 +15,6 @@ updates:
       - dependency-name: "solana-sdk"
     schedule:
       interval: weekly
-    allow:
-      - dependency-type: direct
 
   - package-ecosystem: npm
     directories:
@@ -25,5 +23,7 @@ updates:
       npm:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "ts-mocha"
     schedule:
       interval: weekly
