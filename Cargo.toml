@@ -12,7 +12,7 @@ addr2line = "0.26"
 anyhow = "1.0"
 byteorder = "1.5"
 cargo_metadata = "0.23"
-toml = "0.9"
+toml = "1.0"
 
 # smoelius: Dependencies needed for `__anchor_cli`.
 anchor-client = { version = "0.32", optional = true }
