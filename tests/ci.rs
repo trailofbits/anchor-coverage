@@ -3,7 +3,7 @@ use regex::Regex;
 use std::{env::remove_var, ffi::OsStr, fs::read_to_string, path::Path};
 use walkdir::WalkDir;
 
-#[ctor::ctor]
+#[ctor::ctor(unsafe)]
 fn initialize() {
     unsafe {
         remove_var("CARGO_TERM_COLOR");
