@@ -69,7 +69,7 @@ jobs:
           # du -sh /*/* 2>/dev/null | sort -h || true
           echo /Applications/Xcode* | sort | head -n1 | xargs rm -rfv | grep . >/dev/null
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/cache@v5
         with:
