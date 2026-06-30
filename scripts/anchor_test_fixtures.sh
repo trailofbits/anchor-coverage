@@ -25,7 +25,7 @@ for X in fixtures/*; do
 
     yarn
 
-    wget --quiet https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
+    wget --no-verbose https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
 
     tar xzf patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
 
