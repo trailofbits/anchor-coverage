@@ -8,7 +8,7 @@ license = "AGPL-3.0"
 repository = "https://github.com/trailofbits/anchor-coverage"
 
 [dependencies]
-addr2line = "0.26"
+addr2line = "0.27"
 anyhow = "1.0"
 byteorder = "1.5"
 cargo_metadata = "0.23"
@@ -21,7 +21,7 @@ anchor-lang-idl = { version = "0.1", features = [
     "build",
     "convert",
 ], optional = true }
-cargo_toml = { version = "0.22", optional = true }
+cargo_toml = { version = "1.0", optional = true }
 clap = { version = "4.6", features = ["derive"], optional = true }
 dirs = { version = "6.0", optional = true }
 heck = { version = "0.5", optional = true }
