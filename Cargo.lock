@@ -231,7 +231,7 @@ dependencies = [
  "byteorder",
  "cargo_metadata",
  "cargo_toml",
- "clap 4.6.5",
+ "clap 4.6.6",
  "ctor",
  "dirs",
  "heck 0.5.0",
@@ -1098,9 +1098,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.6.5"
+version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "301b56658598e48f3648647ac6fc887be7e7108eddfa4e9b63fcf3ec58c0cadf"
+checksum = "473c7e07f409a8d772161724aa8db6a765a2532a70f9667eeb7b49d3d02fbdca"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1108,9 +1108,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.6.5"
+version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94a65403d1a1bd28f7dc68eb8506e8874808ee5eecb59298de588e2e1407a078"
+checksum = "7b48fea5a88e9ae728a2dcbedbfc0e730f7d60da42e1cb049a83c9fb8b789889"
 dependencies = [
  "anstream 1.0.0",
  "anstyle",
@@ -1656,9 +1656,9 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elaborate"
-version = "1.2.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "364647699002e13a22fea1aeec23441e46d9c14cf1e0a53bdb08a5460a92f015"
+checksum = "ebccd51c5c9671251371078938192e3b0a51d5a2f22c754a372fc0477fcd4fa6"
 dependencies = [
  "anyhow",
 ]
@@ -2759,9 +2759,9 @@ dependencies = [
 
 [[package]]
 name = "nested_workspace"
-version = "0.8.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2685c01ed134037eb1e3e67bafe6c187b91f77d8d1d9be8a0b840bb82918f93"
+checksum = "5d7d1703f070cee72d8dbcb3084782f3b437e7545db76a5eeb33d90818f30498"
 dependencies = [
  "anstyle",
  "anyhow",
