@@ -111,7 +111,7 @@ jobs:
             cargo install --git https://github.com/coral-xyz/anchor --tag v${{ matrix.anchor-version }} anchor-cli --force
           fi
 
-      - uses: taiki-e/install-action@v2.85.6
+      - uses: taiki-e/install-action@v2.85.10
         with:
           tool: cargo-hack, cargo-udeps
 
