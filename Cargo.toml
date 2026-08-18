@@ -17,7 +17,7 @@ toml = "1.1"
 # smoelius: Dependencies needed for `__anchor_cli`.
 anchor-client = { version = "0.32", optional = true }
 anchor-lang = { version = "0.32", optional = true }
-anchor-lang-idl = { version = "0.1", features = [
+anchor-lang-idl = { version = "0.2", features = [
     "build",
     "convert",
 ], optional = true }
