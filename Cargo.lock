@@ -1670,9 +1670,9 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elaborate"
-version = "2.0.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebccd51c5c9671251371078938192e3b0a51d5a2f22c754a372fc0477fcd4fa6"
+checksum = "9b2d4bb47301a282d44806532e32ba9cc771a5891a938237a0f7a14b855b3f1b"
 dependencies = [
  "anyhow",
 ]
@@ -2773,9 +2773,9 @@ dependencies = [
 
 [[package]]
 name = "nested_workspace"
-version = "1.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d7d1703f070cee72d8dbcb3084782f3b437e7545db76a5eeb33d90818f30498"
+checksum = "a752ca8b9c7e679f3c281e4024e006f4cebac5344f86b8b2af3fc9376907aff8"
 dependencies = [
  "anstyle",
  "anyhow",
