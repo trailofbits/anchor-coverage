@@ -115,11 +115,15 @@ jobs:
         with:
           tool: cargo-hack, cargo-udeps
 
-      - name: Install CI tools
+      - name: Install tools
         run: |
           rustup +nightly component add clippy rustfmt
           cargo install cargo-dylint dylint-link || true
+          cargo install cargo-nested             || true
           cargo install group-runner             || true
+
+      - name: Fetch dependencies
+        run: cargo nested fetch
 
       - name: Build
         run: cargo build
