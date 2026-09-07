@@ -37,7 +37,7 @@ jobs:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         environment: [ubuntu-latest, macos-latest]
-        anchor-version: [0.32.1]
+        anchor-version: [1.0.0, 1.1.2, 1.2.0]
 
     runs-on: ${{ matrix.environment }}
 
@@ -129,7 +129,7 @@ jobs:
         run: cargo build
 
       - name: Sanity test fixtures
-        run: scripts/anchor_test_fixtures.sh
+        run: scripts/anchor_test_fixtures.sh --validator legacy
 
       - name: Test
         run: |
