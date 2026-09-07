@@ -33,7 +33,9 @@ for X in fixtures/*; do
     # So, add them to `PATH` explicitly.
     PATH="$PWD/patched-agave-tools-$AGAVE_TAG-$EXT/bin:$PATH"
 
-    anchor test
+    # smoelius: Arguments passed to this script are forwarded to `anchor test`. For example, one
+    # can pass `--validator legacy` to use the legacy validator.
+    anchor test "$@"
 
     popd
 done
