@@ -29,7 +29,8 @@ for X in fixtures/*; do
 
     tar xzf patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
 
-    # smoelius: `anchor-coverage` will find and use the patched tools, but `anchor test` will not.
+    # smoelius: `anchor-coverage` automatically finds the patched tools, but `anchor test` does not.
+    # So, add them to `PATH` explicitly.
     PATH="$PWD/patched-agave-tools-$AGAVE_TAG-$EXT/bin:$PATH"
 
     anchor test
