@@ -16,6 +16,22 @@ case "$(uname -s)" in
     *)
 esac
 
+TOOLS_NAME="patched-agave-tools-$AGAVE_TAG-$EXT"
+TOOLS_ARCHIVE="$TOOLS_NAME.tar.gz"
+TOOLS_DIR="$PWD/$TOOLS_NAME"
+
+if [[ ! -x "$TOOLS_DIR/bin/solana-test-validator" ]]; then
+    if [[ ! -f "$TOOLS_ARCHIVE" ]]; then
+        wget --no-verbose \
+            "https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/$TOOLS_ARCHIVE"
+    fi
+    tar xzf "$TOOLS_ARCHIVE"
+fi
+
+# smoelius: `anchor-coverage` automatically finds the patched tools, but `anchor test` does not.
+# So, add them to `PATH` explicitly.
+export PATH="$TOOLS_DIR/bin:$PATH"
+
 for X in fixtures/*; do
     if [[ "$X" = fixtures/retry ]]; then
         continue
@@ -24,14 +40,6 @@ for X in fixtures/*; do
     pushd "$X"
 
     yarn
-
-    wget --no-verbose https://github.com/trail-of-forks/sbpf-coverage/releases/download/$AGAVE_TAG/patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
-
-    tar xzf patched-agave-tools-$AGAVE_TAG-$EXT.tar.gz
-
-    # smoelius: `anchor-coverage` automatically finds the patched tools, but `anchor test` does not.
-    # So, add them to `PATH` explicitly.
-    PATH="$PWD/patched-agave-tools-$AGAVE_TAG-$EXT/bin:$PATH"
 
     # smoelius: Arguments passed to this script are forwarded to `anchor test`. For example, one
     # can pass `--validator legacy` to use the legacy validator.
