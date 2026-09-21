@@ -276,6 +276,7 @@ fn anchor_coverage_command(dir: impl AsRef<Path>) -> Command {
         env!("CARGO_MANIFEST_PATH"),
         "--quiet",
         "--",
+        "--validator=legacy",
     ]);
     command.current_dir(dir);
     command
