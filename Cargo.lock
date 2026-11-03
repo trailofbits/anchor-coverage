@@ -1685,9 +1685,9 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elaborate"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b2d4bb47301a282d44806532e32ba9cc771a5891a938237a0f7a14b855b3f1b"
+checksum = "c4f37af86e18e0e9d38a9b0f45ed1961b6a5f74d2f38536fef28cdac8a47ddee"
 dependencies = [
  "anyhow",
 ]
@@ -2788,9 +2788,9 @@ dependencies = [
 
 [[package]]
 name = "nested_workspace"
-version = "3.1.1"
+version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "318690e61de782fb3bc44a95d83661794f322fd30834949a7f4b36a9f47ec972"
+checksum = "7370d3f8ebc68982ba4e55b40852478456e07daa69eaca3c98ff6cf809935227"
 dependencies = [
  "anstyle",
  "anyhow",
@@ -6626,9 +6626,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.39.3"
+version = "0.40.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21d0d938c10fcda3e897e28aaddf4ab462375d411f4378cd63b1c945f69aba96"
+checksum = "0e8a3edbe0394ce115f3917a00349dd242be09eb5a091ed509eaf67b55cfb8a8"
 dependencies = [
  "libc",
  "memchr",
